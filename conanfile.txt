@@ -1,0 +1,5 @@
+ [requires]
+ cli11/2.1.1
+
+ [generators]
+ cmake
