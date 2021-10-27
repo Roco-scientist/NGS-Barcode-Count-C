@@ -89,7 +89,7 @@ void BarcodeConversion::print() {
 
 	cout << "Counted barcode conversion" << endl;
 	for (int i = 0; i < counted_barcodes_hash.size(); i++) {
-		cout << "Barcode number" << i + 1 << endl << endl;
+		cout << endl << "Barcode number" << i + 1 << endl << endl;
 		stringmap barcode_hash = counted_barcodes_hash[i];
 		for (const auto &myPair : barcode_hash) {
 			std::cout << "Key:[" << myPair.first << "] Value:["

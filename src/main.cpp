@@ -23,5 +23,6 @@ int main(int argc, char* argv[]) {
 	info::BarcodeConversion barcode_info;
 	barcode_info.sample_barcode_conversion(sample_barcodes_file);
 	barcode_info.barcode_file_conversion(counted_barcodes_file);
+	barcode_info.print();
 	return 0;
 }
