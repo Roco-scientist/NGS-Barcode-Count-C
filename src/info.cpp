@@ -17,10 +17,8 @@ vector<string> take_columns(int num_columns, string row) {
 	       current_column <= num_columns) {
 		data = row.substr(0, pos);
 		data_points.push_back(data);
-		row.erase(
-		    0,
-		    pos +
-			1);  // remove the data from the string up to the comma
+		// remove the data from the string up to the comma
+		row.erase(0, pos + 1);
 		current_column++;
 	}
 	// If the the last column was the num_columns then push the last string
