@@ -18,9 +18,18 @@ struct BarcodeConversion {
 
 	void sample_barcode_conversion(const std::string barcode_path);
 	void barcode_file_conversion(const std::string barcode_path);
-	void get_sample_seqs();
-	void get_barcode_seqs();
 	void print();
+};
+
+struct SequenceFormat {
+	std::string regex_string;
+	bool random_barcode;
+	std::regex format_regex;
+	std::string format_string;
+	std::string regions_string;
+	int barcode_num;
+	int length;
+	void build_regex(const std::string format_path);
 };
 
 #endif
