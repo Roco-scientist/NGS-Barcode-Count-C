@@ -31,13 +31,13 @@ int main(int argc, char* argv[]) {
 
 	// Get all DNA barcode conversion data
 	info::BarcodeConversion barcode_info;
-	barcode_info.sample_barcode_conversion(sample_barcodes_file);
-	barcode_info.barcode_file_conversion(counted_barcodes_file);
+	barcode_info.sample_barcode_conversion(&sample_barcodes_file);
+	barcode_info.barcode_file_conversion(&counted_barcodes_file);
 	// barcode_info.print();
 
 	// Convert format file
 	info::SequenceFormat sequence_format;
-	sequence_format.build_regex(format_file);
+	sequence_format.build_regex(&format_file);
 	sequence_format.print();
 	// sequence_format.print();
 	return 0;

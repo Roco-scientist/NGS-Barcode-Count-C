@@ -17,8 +17,8 @@ struct BarcodeConversion {
 	std::vector<stringmap> counted_barcodes_hash;
 	std::vector<stringset> counted_barcodes_seqs;
 
-	void sample_barcode_conversion(const std::string barcode_path);
-	void barcode_file_conversion(const std::string barcode_path);
+	void sample_barcode_conversion(std::string* barcode_path);
+	void barcode_file_conversion(std::string* barcode_path);
 	void print();
 };
 
@@ -30,7 +30,7 @@ struct SequenceFormat {
 	size_t barcode_num;
 	size_t length;
 
-	void build_regex(const std::string format_path);
+	void build_regex(std::string* format_path);
 	void print();
 };
 
