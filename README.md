@@ -18,5 +18,5 @@ make
 
 ## Run
 ```
-bin/barcode-count -c <counted_barcode_file> -s <sample_barcode_file>
+bin/barcode-count -c <counted_barcode_file> -s <sample_barcode_file> -q <format_file>
 ```
