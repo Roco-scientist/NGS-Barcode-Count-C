@@ -219,10 +219,11 @@ void SequenceFormat::build_regex(const string format_path) {
 void SequenceFormat::print() {
 	cout << "-SEQUENCE FORMAT-" << endl;
 	cout << format_string << endl;
-	cout << "Length: " << length << endl << "Barcodes:" << endl;
-	for (int i = 0; i < barcodes.size(); ++i) {
-		cout << barcodes[i] << endl;
+	cout << "Length: " << length << endl << "Barcodes: " << barcodes[0];
+	for (int i = 1; i < barcodes.size(); ++i) {
+		cout << ", " << barcodes[i];
 	}
+	cout << endl;
 	for (int i = 0; i < length; ++i) {
 		cout << '-';
 	}
