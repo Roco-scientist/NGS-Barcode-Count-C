@@ -4,6 +4,7 @@
 #include <iostream>
 #include <regex>
 #include <string>
+#include <vector>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -18,8 +19,18 @@ struct BarcodeConversion {
 
 	void sample_barcode_conversion(const std::string barcode_path);
 	void barcode_file_conversion(const std::string barcode_path);
-	void get_sample_seqs();
-	void get_barcode_seqs();
+	void print();
+};
+
+struct SequenceFormat {
+	std::vector<std::string> barcodes;
+	bool random_barcode;
+	std::regex format_regex;
+	std::string format_string;
+	size_t barcode_num;
+	size_t length;
+
+	void build_regex(const std::string format_path);
 	void print();
 };
 
