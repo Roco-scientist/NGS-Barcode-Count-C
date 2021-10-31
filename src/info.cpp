@@ -40,6 +40,9 @@ vector<string> take_columns(int num_columns, string row) {
  * any sequencing errors.
  */
 void BarcodeConversion::sample_barcode_conversion(const string barcode_path) {
+	if (barcode_path == "default") {
+		return;
+	}
 	ifstream barcode_file;
 	barcode_file.open(barcode_path);
 	if (!barcode_file.is_open()) {
@@ -48,11 +51,11 @@ void BarcodeConversion::sample_barcode_conversion(const string barcode_path) {
 	}
 
 	string row;
-	std::getline(barcode_file, row);  // The first row should be the header
-	for (string row; std::getline(barcode_file, row);) {
+	getline(barcode_file, row);  // The first row should be the header
+	for (string row; getline(barcode_file, row);) {
 		vector<string> row_vec = take_columns(2, row);
 		samples_barcode_hash.insert(
-		    std::pair<string, string>(row_vec[0], row_vec[1]));
+		    pair<string, string>(row_vec[0], row_vec[1]));
 		samples_seqs.insert(row_vec[0]);
 	}
 }
@@ -64,6 +67,9 @@ void BarcodeConversion::sample_barcode_conversion(const string barcode_path) {
  * sequences are created to error correct for any sequencing errors.
  */
 void BarcodeConversion::barcode_file_conversion(const string barcode_path) {
+	if (barcode_path == "default") {
+		return;
+	}
 	// Open the file and handle not found errors
 	ifstream barcode_file;
 	barcode_file.open(barcode_path);
@@ -78,12 +84,12 @@ void BarcodeConversion::barcode_file_conversion(const string barcode_path) {
 	vector<vector<string>> row_info;
 
 	string row;
-	std::getline(barcode_file, row);  // The first row should be the header
+	getline(barcode_file, row);  // The first row should be the header
 	// Collect all comma separated rows and keep track of how many barcodes
-	for (string row; std::getline(barcode_file, row);) {
+	for (string row; getline(barcode_file, row);) {
 		vector<string> row_vec = take_columns(3, row);
 		row_info.push_back(row_vec);
-		barcode_num.insert(std::stoi(row_vec[2]));
+		barcode_num.insert(stoi(row_vec[2]));
 	}
 
 	// Get total number of counted barcodes per sequence. ie for DEL this
@@ -108,7 +114,7 @@ void BarcodeConversion::barcode_file_conversion(const string barcode_path) {
 	// index as the counted barcode number
 	for (int i = 0; i < row_info.size(); i++) {
 		vector<string> row_vec = row_info[i];
-		int barcode_num = std::stoi(row_vec[2]) - 1;
+		int barcode_num = stoi(row_vec[2]) - 1;
 		pair<string, string> barcode_conv{row_vec[0], row_vec[1]};
 		counted_barcodes_hash[barcode_num].insert(barcode_conv);
 		counted_barcodes_seqs[barcode_num].insert(row_vec[0]);
@@ -119,8 +125,8 @@ void BarcodeConversion::barcode_file_conversion(const string barcode_path) {
 void BarcodeConversion::print() {
 	cout << "Sample barcode conversion" << endl;
 	for (const auto &myPair : samples_barcode_hash) {
-		std::cout << "Key:[" << myPair.first << "] Value:["
-			  << myPair.second << "]\n";
+		cout << "Key:[" << myPair.first << "] Value:[" << myPair.second
+		     << "]\n";
 	}
 	cout << endl;
 
@@ -129,8 +135,79 @@ void BarcodeConversion::print() {
 		cout << endl << "Barcode number" << i + 1 << endl << endl;
 		stringmap barcode_hash = counted_barcodes_hash[i];
 		for (const auto &myPair : barcode_hash) {
-			std::cout << "Key:[" << myPair.first << "] Value:["
-				  << myPair.second << "]\n";
+			cout << "Key:[" << myPair.first << "] Value:["
+			     << myPair.second << "]\n";
 		}
 	}
 }
+
+void SequenceFormat::build_regex(const string format_path) {
+	// Open the file and handle not found errors
+	ifstream format_file;
+	format_file.open(format_path);
+	if (!format_file.is_open()) {
+		cout << format_path << " not found" << endl;
+		exit(1);
+	}
+
+	string format_data;
+	string row;
+	// Collect all comma separated rows and keep track of how many barcodes
+	for (string row; getline(format_file, row);) {
+		if (row.front() != '#') {
+			format_data.append(row);
+		}
+	}
+
+	cout << format_data << endl;
+
+	regex digit_search("[0-9]+");
+
+	regex barcode_search(R"((\{\d+\})|(\[\d+\])|(\(\d+\))|N+|[ATGC]+)",
+			     regex::icase);
+
+	smatch matches;
+	auto words_begin = sregex_iterator(
+	    format_data.begin(), format_data.end(), barcode_search);
+	auto words_end = sregex_iterator();
+
+	for (sregex_iterator i = words_begin; i != words_end; ++i) {
+		bool barcode = false;
+		smatch match = *i;
+		string match_str = match.str();
+		int barcode_num = 0;
+		if (match_str.find('[') != string::npos) {
+			barcode = true;
+			barcodes.push_back("sample");
+		}
+		if (match_str.find('(') != string::npos) {
+			barcode = true;
+			barcodes.push_back("random");
+		}
+		if (match_str.find('{') != string::npos) {
+			barcode = true;
+			++barcode_num;
+			string group_name = "barcode";
+			group_name.push_back(barcode_num);
+			barcodes.push_back(group_name);
+		}
+		if (barcode) {
+			smatch digits_match;
+			regex_search(match_str, digits_match, digit_search);
+			string digits = digits_match.str();
+			regex_string.append("([ATGCN]{");
+			regex_string.append(digits);
+			regex_string.append("})");
+		}else if (match_str.find('N') != string::npos) {
+			regex_string.append("[ATGCN]{");
+			regex_string.push_back(match_str.size());
+			regex_string.push_back('}');
+		}else{
+			regex_string.append(match_str);
+		}
+	}
+	cout << regex_string << endl << endl;
+	for (int i = 0; i < barcodes.size(); ++i) {
+		cout << barcodes[i] << endl;
+	}
+};

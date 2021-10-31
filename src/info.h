@@ -4,6 +4,7 @@
 #include <iostream>
 #include <regex>
 #include <string>
+#include <vector>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -22,6 +23,7 @@ struct BarcodeConversion {
 };
 
 struct SequenceFormat {
+	std::vector<std::string> barcodes;
 	std::string regex_string;
 	bool random_barcode;
 	std::regex format_regex;
@@ -29,7 +31,9 @@ struct SequenceFormat {
 	std::string regions_string;
 	int barcode_num;
 	int length;
+
 	void build_regex(const std::string format_path);
+	void print();
 };
 
 #endif
