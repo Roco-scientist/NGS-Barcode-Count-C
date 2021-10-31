@@ -24,13 +24,11 @@ struct BarcodeConversion {
 
 struct SequenceFormat {
 	std::vector<std::string> barcodes;
-	std::string regex_string;
 	bool random_barcode;
 	std::regex format_regex;
 	std::string format_string;
-	std::string regions_string;
-	int barcode_num;
-	int length;
+	size_t barcode_num;
+	size_t length;
 
 	void build_regex(const std::string format_path);
 	void print();

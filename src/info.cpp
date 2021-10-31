@@ -159,7 +159,7 @@ void SequenceFormat::build_regex(const string format_path) {
 		}
 	}
 
-	cout << format_data << endl;
+	//  cout << format_data << endl;
 
 	regex digit_search("[0-9]+");
 
@@ -167,15 +167,16 @@ void SequenceFormat::build_regex(const string format_path) {
 			     regex::icase);
 
 	smatch matches;
-	auto words_begin = sregex_iterator(
-	    format_data.begin(), format_data.end(), barcode_search);
+	auto words_begin = sregex_iterator(format_data.begin(),
+					   format_data.end(), barcode_search);
 	auto words_end = sregex_iterator();
 
+	barcode_num = 0;
+	string regex_string;
 	for (sregex_iterator i = words_begin; i != words_end; ++i) {
 		bool barcode = false;
 		smatch match = *i;
 		string match_str = match.str();
-		int barcode_num = 0;
 		if (match_str.find('[') != string::npos) {
 			barcode = true;
 			barcodes.push_back("sample");
@@ -188,7 +189,7 @@ void SequenceFormat::build_regex(const string format_path) {
 			barcode = true;
 			++barcode_num;
 			string group_name = "barcode";
-			group_name.push_back(barcode_num);
+			group_name.append(to_string(barcode_num));
 			barcodes.push_back(group_name);
 		}
 		if (barcode) {
@@ -198,16 +199,32 @@ void SequenceFormat::build_regex(const string format_path) {
 			regex_string.append("([ATGCN]{");
 			regex_string.append(digits);
 			regex_string.append("})");
-		}else if (match_str.find('N') != string::npos) {
+			for (int i = 0; i < stoi(digits); ++i) {
+				format_string.push_back('N');
+			}
+		} else if (match_str.find('N') != string::npos) {
 			regex_string.append("[ATGCN]{");
-			regex_string.push_back(match_str.size());
+			regex_string.append(to_string(match_str.size()));
 			regex_string.push_back('}');
-		}else{
+			format_string.append(match_str);
+		} else {
 			regex_string.append(match_str);
+			format_string.append(match_str);
 		}
 	}
-	cout << regex_string << endl << endl;
+	format_regex.assign(regex_string, regex::icase);
+	length = format_string.length();
+};
+
+void SequenceFormat::print() {
+	cout << "-SEQUENCE FORMAT-" << endl;
+	cout << format_string << endl;
+	cout << "Length: " << length << endl << "Barcodes:" << endl;
 	for (int i = 0; i < barcodes.size(); ++i) {
 		cout << barcodes[i] << endl;
 	}
-};
+	for (int i = 0; i < length; ++i) {
+		cout << '-';
+	}
+	cout << endl << endl;
+}

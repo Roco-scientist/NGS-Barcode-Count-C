@@ -38,6 +38,7 @@ int main(int argc, char* argv[]) {
 	// Convert format file
 	info::SequenceFormat sequence_format;
 	sequence_format.build_regex(format_file);
+	sequence_format.print();
 	// sequence_format.print();
 	return 0;
 }
