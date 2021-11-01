@@ -2,7 +2,9 @@
 
 using namespace std;
 
-void sequence(input::Sequences sequences) {
+void sequence(input::Sequences& sequences) {
 	string seq = sequences.retrieve();
-	cout << seq << endl;
+	while (seq != "finished") {
+		cout << seq << endl;
+	}
 }

@@ -14,29 +14,34 @@
 
 using namespace std;
 
-int main(int argc, char* argv[]) {
+int main(int argc, char **argv) {
 	// argparse::Args args;
 	// args.get_args(argc, *argv);
 	// Get command line arguments
-	CLI::App app{"Counts barcodes located in sequencing data"};
+	string sample_barcodes_file = "../test_del/sample_barcode_file.csv";
+	string counted_barcodes_file = "../test_del/test.bb_barcodes.csv";
+	string format_file = "../test_del/test.scheme.txt";
+	string fastq_path = "../test_del/testlg.fastq";
 
-	std::string sample_barcodes_file = "default";
-	app.add_option("-s,--sample_barcodes", sample_barcodes_file,
-		       "Sample barcodes csv file");
+	// CLI::App app{"Counts barcodes located in sequencing data"};
 
-	std::string counted_barcodes_file = "default";
-	app.add_option("-c,--counted_barcodes", counted_barcodes_file,
-		       "Building block barcodes csv file");
+	// std::string sample_barcodes_file = "default";
+	// app.add_option("-s,--sample_barcodes", sample_barcodes_file,
+	// 	       "Sample barcodes csv file");
 
-	std::string format_file;
-	app.add_option("-q,--sequence_format", format_file,
-		       "Sequence format file")
-	    ->required();
+	// std::string counted_barcodes_file = "default";
+	// app.add_option("-c,--counted_barcodes", counted_barcodes_file,
+	// 	       "Building block barcodes csv file");
 
-	std::string fastq_path;
-	app.add_option("-f,--fastq", fastq_path, "Fastq file path")->required();
+	// std::string format_file;
+	// app.add_option("-q,--sequence_format", format_file,
+	// 	       "Sequence format file")->required();
 
-	CLI11_PARSE(app, argc, argv);
+	// std::string fastq_path;
+	// app.add_option("-f,--fastq", fastq_path, "Fastq file path")->required();
+
+	// CLI11_PARSE(app, argc, argv);
+	// app.parse(argc, argv);
 
 	// Get all DNA barcode conversion data
 	info::BarcodeConversion barcode_info;
@@ -52,10 +57,10 @@ int main(int argc, char* argv[]) {
 	atomic<bool> exit_thread;
 	exit_thread.store(false);
 	input::Sequences sequences;
-	thread reader([&sequences, &fastq_path]() {
+	thread reader([&]() {
 		input::read_fastq(&fastq_path, sequences);
 	});
-	thread parser([&sequences]() { parse::sequence(sequences); });
+	thread parser([&]() { parse::sequence(sequences); });
 	reader.join();
 	parser.join();
 	return 0;

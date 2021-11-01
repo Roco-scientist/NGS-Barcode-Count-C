@@ -2,7 +2,7 @@
 
 using namespace std;
 
-void read_fastq(string* fastq_path, Sequences sequences) {
+void read_fastq(string* fastq_path, Sequences& sequences) {
 	bool exit_thread = false;
 	ifstream fastq_file;
 	fastq_file.open(*fastq_path);
@@ -14,8 +14,9 @@ void read_fastq(string* fastq_path, Sequences sequences) {
 	unsigned int total_reads = 0;
 	for (string row; getline(fastq_file, row);) {
 		if (line_num == 2) {
-			sequences.push(row);
 			// cout << row << endl;
+			sequences.push(row);
+			++total_reads;
 		}
 		++line_num;
 		if (line_num == 5) {
@@ -25,4 +26,5 @@ void read_fastq(string* fastq_path, Sequences sequences) {
 			break;
 		}
 	}
+	sequences.push("finished");
 }

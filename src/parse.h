@@ -8,6 +8,6 @@
 #include <vector>
 #include "input.h"
 
-void sequence(input::Sequences sequences);
+void sequence(input::Sequences& sequences);
 
 #endif
