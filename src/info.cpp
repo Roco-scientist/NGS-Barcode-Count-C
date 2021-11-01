@@ -39,14 +39,14 @@ vector<string> take_columns(int num_columns, string row) {
  * Additionally, an unordered_set of sequences is created to error correct for
  * any sequencing errors.
  */
-void BarcodeConversion::sample_barcode_conversion(const string barcode_path) {
-	if (barcode_path == "default") {
+void BarcodeConversion::sample_barcode_conversion(string* barcode_path) {
+	if (*barcode_path == "default") {
 		return;
 	}
 	ifstream barcode_file;
-	barcode_file.open(barcode_path);
+	barcode_file.open(*barcode_path);
 	if (!barcode_file.is_open()) {
-		cout << barcode_path << " not found" << endl;
+		cout << *barcode_path << " not found" << endl;
 		exit(1);
 	}
 
@@ -66,15 +66,15 @@ void BarcodeConversion::sample_barcode_conversion(const string barcode_path) {
  * convert DNA barcode to sample name. Additionally, unordered_sets of the
  * sequences are created to error correct for any sequencing errors.
  */
-void BarcodeConversion::barcode_file_conversion(const string barcode_path) {
-	if (barcode_path == "default") {
+void BarcodeConversion::barcode_file_conversion(string* barcode_path) {
+	if (*barcode_path == "default") {
 		return;
 	}
 	// Open the file and handle not found errors
 	ifstream barcode_file;
-	barcode_file.open(barcode_path);
+	barcode_file.open(*barcode_path);
 	if (!barcode_file.is_open()) {
-		cout << barcode_path << " not found" << endl;
+		cout << *barcode_path << " not found" << endl;
 		exit(1);
 	}
 
@@ -141,12 +141,12 @@ void BarcodeConversion::print() {
 	}
 }
 
-void SequenceFormat::build_regex(const string format_path) {
+void SequenceFormat::build_regex(string* format_path) {
 	// Open the file and handle not found errors
 	ifstream format_file;
-	format_file.open(format_path);
+	format_file.open(*format_path);
 	if (!format_file.is_open()) {
-		cout << format_path << " not found" << endl;
+		cout << *format_path << " not found" << endl;
 		exit(1);
 	}
 
