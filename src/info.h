@@ -27,8 +27,8 @@ struct SequenceFormat {
 	bool random_barcode;
 	std::regex format_regex;
 	std::string format_string;
-	size_t barcode_num;
-	size_t length;
+	unsigned int barcode_num;
+	unsigned int length;
 
 	void build_regex(std::string* format_path);
 	void print();

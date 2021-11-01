@@ -1,10 +1,16 @@
+#include <atomic>
 #include <iostream>
+#include <mutex>
+#include <queue>
+#include <thread>
 
 #include "CLI/App.hpp"
 #include "CLI/Config.hpp"
 #include "CLI/Formatter.hpp"
 // #include "argparse.h"
 #include "info.h"
+#include "input.h"
+#include "parse.h"
 
 using namespace std;
 
@@ -27,6 +33,9 @@ int main(int argc, char* argv[]) {
 		       "Sequence format file")
 	    ->required();
 
+	std::string fastq_path;
+	app.add_option("-f,--fastq", fastq_path, "Fastq file path")->required();
+
 	CLI11_PARSE(app, argc, argv);
 
 	// Get all DNA barcode conversion data
@@ -39,6 +48,15 @@ int main(int argc, char* argv[]) {
 	info::SequenceFormat sequence_format;
 	sequence_format.build_regex(&format_file);
 	sequence_format.print();
-	// sequence_format.print();
+
+	atomic<bool> exit_thread;
+	exit_thread.store(false);
+	input::Sequences sequences;
+	thread reader([&sequences, &fastq_path]() {
+		input::read_fastq(&fastq_path, sequences);
+	});
+	thread parser([&sequences]() { parse::sequence(sequences); });
+	reader.join();
+	parser.join();
 	return 0;
 }

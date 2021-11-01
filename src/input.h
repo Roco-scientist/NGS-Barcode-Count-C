@@ -2,17 +2,31 @@
 #define input
 
 #include <fstream>
+#include <iostream>
+#include <mutex>
+#include <queue>
 #include <vector>
 
-struct FastqLineReader {
-	bool test;
-	size_t line_num;
-	size_t total_reads;
-	std::string raw_sequence_read;
-	std::vector<std::string> sequences;
-	bool exit;
+struct Sequences {
+	std::queue<std::string> seq_queue;
+	std::mutex mtx;
 
-	void read_lines(std::string* fastq_path);
+	std::string retrieve() {
+		std::lock_guard<std::mutex> lg(mtx);
+		std::string sequence = NULL;
+		if (!seq_queue.empty()) {
+			sequence = seq_queue.front();
+			seq_queue.pop();
+		}
+		return sequence;
+	}
+
+	void push(std::string sequence) {
+		std::lock_guard<std::mutex> lg(mtx);
+		seq_queue.push(sequence);
+	}
 };
+
+void read_fastq(std::string* fastq_path, Sequences sequences);
 
 #endif

@@ -2,7 +2,27 @@
 
 using namespace std;
 
-void FastqLineReader::read_lines(string* fastq_path) {
+void read_fastq(string* fastq_path, Sequences sequences) {
+	bool exit_thread = false;
 	ifstream fastq_file;
 	fastq_file.open(*fastq_path);
+	if (!fastq_file.is_open()) {
+		cout << *fastq_path << " not found" << endl;
+		exit(1);
+	}
+	unsigned int line_num = 1;
+	unsigned int total_reads = 0;
+	for (string row; getline(fastq_file, row);) {
+		if (line_num == 2) {
+			sequences.push(row);
+			// cout << row << endl;
+		}
+		++line_num;
+		if (line_num == 5) {
+			line_num = 1;
+		}
+		if (exit_thread) {
+			break;
+		}
+	}
 }
