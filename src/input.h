@@ -15,7 +15,9 @@ class Sequences {
 		std::string sequence = "empty";
 		if (!seq_queue.empty()) {
 			sequence = seq_queue.front();
-			seq_queue.pop();
+			if (sequence != "finished") {
+				seq_queue.pop();
+			}
 		}
 		return sequence;
 	}
@@ -23,18 +25,6 @@ class Sequences {
 	void push(std::string sequence) {
 		std::lock_guard<std::mutex> lg(mtx);
 		seq_queue.push(sequence);
-	}
-
-	Sequences& operator=(const Sequences& o) {
-		if (this != &o) {
-			// std::lock(mtx, o.mtx);
-			std::lock_guard<std::mutex> lhs_lk(mtx,
-							   std::adopt_lock);
-			std::lock_guard<std::mutex> rhs_lk(o.mtx,
-							   std::adopt_lock);
-			seq_queue = o.seq_queue;
-		}
-		return *this;
 	}
 
        private:
