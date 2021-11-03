@@ -2,10 +2,11 @@
 
 using namespace std;
 
-void sequence(input::Sequences& sequences) {
-	string seq = sequences.retrieve();
-	while (seq != "finished") {
-		seq = sequences.retrieve();
-		cout << seq << endl;
+void SequenceParser::run() {
+	sequence = sequences.retrieve();
+	while (sequence != "finished") {
+		sequence = sequences.retrieve();
+		cout << sequence << endl;
 	}
+
 }

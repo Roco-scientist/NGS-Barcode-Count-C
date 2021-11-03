@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
 	});
 	vector<thread> parsers;
 	for (int i = 1; i < num_threads; ++i ){
-		parsers.push_back(thread([&]() { parse::sequence(sequences); }));
+		parsers.push_back(thread([&]() { parse::SequenceParser a(sequences); }));
 	}
 	// wait for threads
 	reader.join();

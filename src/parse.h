@@ -6,8 +6,20 @@
 #include <mutex>
 #include <queue>
 #include <vector>
+
 #include "input.h"
 
-void sequence(input::Sequences& sequences);
+class SequenceParser {
+       public:
+	SequenceParser(input::Sequences& sequences) : sequences(sequences) {
+		run();
+	};
+	SequenceParser();
+
+       private:
+	input::Sequences& sequences;
+	std::string sequence;
+	void run();
+};
 
 #endif
