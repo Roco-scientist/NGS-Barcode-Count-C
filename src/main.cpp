@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
 	string sample_barcodes_file = "../test_del/sample_barcode_file.csv";
 	string counted_barcodes_file = "../test_del/test.bb_barcodes.csv";
 	string format_file = "../test_del/test.scheme.txt";
-	string fastq_path = "../test_del/testlg.fastq";
+	string fastq_path = "../test_del/test.fastq";
 	int num_threads = 8;
 
 	// CLI::App app{"Counts barcodes located in sequencing data"};
@@ -39,7 +39,8 @@ int main(int argc, char **argv) {
 	// 	       "Sequence format file")->required();
 
 	// std::string fastq_path;
-	// app.add_option("-f,--fastq", fastq_path, "Fastq file path")->required();
+	// app.add_option("-f,--fastq", fastq_path, "Fastq file
+	// path")->required();
 
 	// CLI11_PARSE(app, argc, argv);
 	// app.parse(argc, argv);
@@ -58,12 +59,13 @@ int main(int argc, char **argv) {
 	atomic<bool> exit_thread;
 	exit_thread.store(false);
 	input::Sequences sequences;
-	thread reader([&]() {
-		input::read_fastq(&fastq_path, sequences);
-	});
+	thread reader([&]() { input::read_fastq(&fastq_path, sequences); });
 	vector<thread> parsers;
-	for (int i = 1; i < num_threads; ++i ){
-		parsers.push_back(thread([&]() { parse::SequenceParser a(sequences); }));
+	for (int i = 1; i < num_threads; ++i) {
+		parsers.push_back(thread([&]() {
+			parse::SequenceParser a(sequences, barcode_info,
+						sequence_format);
+		}));
 	}
 	// wait for threads
 	reader.join();
