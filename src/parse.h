@@ -28,8 +28,11 @@ class SequenceParser {
 	info::BarcodeConversion barcode_conversion;
 	info::SequenceFormat sequence_format;
 	std::string sequence;
-	void run();
+
+	std::string fix_sequence(std::string query_sequence, std::vector<std::string> subject_sequences);
+	void fix_constant();
 	void get_barcodes();
+	void run();
 };
 
 #endif

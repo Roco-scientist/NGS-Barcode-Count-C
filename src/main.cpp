@@ -23,6 +23,7 @@ int main(int argc, char **argv) {
 	string format_file = "../test_del/test.scheme.txt";
 	string fastq_path = "../test_del/test.fastq";
 	int num_threads = 8;
+	// int num_threads = 2;
 
 	// CLI::App app{"Counts barcodes located in sequencing data"};
 
