@@ -1,10 +1,11 @@
 #ifndef info
 #define info
+#include <ctime>
 #include <fstream>
 #include <iostream>
+#include <mutex>
 #include <regex>
 #include <string>
-#include <mutex>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -68,12 +69,15 @@ class Results {
 	};
 	Results();
 	void new_results(std::unordered_set<std::string>* sample_seqs);
-	void add_count(std::string sample_barcode, std::vector<std::string> counted_barcodes);
+	void add_count(std::string sample_barcode,
+		       std::vector<std::string> counted_barcodes);
 	void add_constant_error();
 	void add_sample_barcode_error();
 	void add_counted_barcode_error();
 	void print();
 	void print_errors();
+	void to_csv(bool merged, BarcodeConversion barcode_conversion,
+		    std::string outpath);
 
        private:
 	std::mutex mtx;

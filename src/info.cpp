@@ -236,17 +236,17 @@ void Results::add_count(string sample_barcode,
 	++correct_counts;
 };
 
-void Results::add_constant_error(){
+void Results::add_constant_error() {
 	lock_guard<mutex> lg(mtx_const);
 	++constant_errors;
 }
 
-void Results::add_sample_barcode_error(){
+void Results::add_sample_barcode_error() {
 	lock_guard<mutex> lg(mtx_samp);
 	++sample_barcode_errors;
 }
 
-void Results::add_counted_barcode_error(){
+void Results::add_counted_barcode_error() {
 	lock_guard<mutex> lg(mtx_count);
 	++counted_barcode_errors;
 }
@@ -265,4 +265,15 @@ void Results::print_errors() {
 	cout << "Constant region errors: " << constant_errors << endl;
 	cout << "Sample barcode errors:  " << sample_barcode_errors << endl;
 	cout << "Counted barcode errors: " << counted_barcode_errors << endl;
+};
+
+void Results::to_csv(bool merged, BarcodeConversion barcode_conversion,
+		     string outpath) {
+	time_t now = time(0);
+	tm *ltm = localtime(&now);
+	
+	if (merged) {
+		ofstream merge_file;
+		merge_file.open(outpath);
+	}
 };
