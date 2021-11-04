@@ -1,4 +1,5 @@
 #include <atomic>
+#include <chrono>
 #include <iostream>
 #include <mutex>
 #include <queue>
@@ -15,6 +16,7 @@
 using namespace std;
 
 int main(int argc, char **argv) {
+	chrono::steady_clock::time_point start = chrono::steady_clock::now();
 	// argparse::Args args;
 	// args.get_args(argc, *argv);
 	// Get command line arguments
@@ -75,5 +77,24 @@ int main(int argc, char **argv) {
 		parsers[i].join();
 	}
 	results.print_errors();
+	chrono::steady_clock::time_point finish = chrono::steady_clock::now();
+	string milliseconds = to_string(chrono::duration_cast<chrono::milliseconds>(finish - start).count() % 1000);
+	while (milliseconds.size() < 3) {
+		string millisecondes_temp = "0";
+		millisecondes_temp.append(milliseconds);
+		milliseconds = millisecondes_temp;
+	}
+	int total_seconds_passed = chrono::duration_cast<chrono::seconds>(finish - start).count();
+	int seconds = total_seconds_passed % 60;
+	int minutes = (total_seconds_passed % 3600) / 60;
+	int hours = total_seconds_passed / 3600;
+	cout << "Total time: ";
+	if (hours > 0) {
+		cout << hours << " hours ";
+	}
+	if (minutes > 0) {
+		cout << minutes << " minutes ";
+	}
+	cout << seconds << "." << milliseconds << " seconds" << endl;
 	return 0;
 }
