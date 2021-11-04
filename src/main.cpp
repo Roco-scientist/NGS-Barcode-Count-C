@@ -2,6 +2,7 @@
 #include <chrono>
 #include <iostream>
 #include <mutex>
+#include <pthread.h>
 #include <queue>
 #include <thread>
 
@@ -17,8 +18,8 @@ int main(int argc, char** argv) {
 
 	// Get command line arguments
 	CLI::App app{
-	    "Counts barcodes located in sequencing data\nVersion: 0.1.0\n"};
-	app.set_version_flag("-v,--version", "0.1.0");
+	    "Counts barcodes located in sequencing data\nVersion: 0.1.1\n"};
+	app.set_version_flag("-v,--version", "0.1.1");
 
 	std::string sample_barcodes_file;
 	app.add_option("-s,--sample_barcodes", sample_barcodes_file,
@@ -87,7 +88,7 @@ int main(int argc, char** argv) {
 	}
 	// wait for threads
 	reader.join();
-	for (int i = 0; i < parsers.size(); ++i) {
+	for (size_t i = 0; i < parsers.size(); ++i) {
 		parsers[i].join();
 	}
 	results.print_errors();

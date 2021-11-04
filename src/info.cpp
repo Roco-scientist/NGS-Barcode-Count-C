@@ -3,7 +3,7 @@
 using namespace std;
 
 vector<string> take_columns(int num_columns, string row) {
-	int pos;		     // keep track of the column position
+	size_t pos;		     // keep track of the column position
 	string data;		     // column,row data holder
 	vector<string> data_points;  // vector to contain all data points
 	int current_column = 1;	     // start at column 1
@@ -96,7 +96,7 @@ void BarcodeConversion::barcode_file_conversion(string *barcode_path) {
 
 	// Insert info into vectors of hashmaps and hashsets while using the
 	// index as the counted barcode number
-	for (int i = 0; i < row_info.size(); i++) {
+	for (size_t i = 0; i < row_info.size(); i++) {
 		vector<string> row_vec = row_info[i];
 		int barcode_num = stoi(row_vec[2]) - 1;
 		pair<string, string> barcode_conv{row_vec[0], row_vec[1]};
@@ -113,7 +113,7 @@ void BarcodeConversion::print() {
 	cout << endl;
 
 	cout << "Counted barcode conversion" << endl;
-	for (int i = 0; i < counted_barcodes_hash.size(); i++) {
+	for (size_t i = 0; i < counted_barcodes_hash.size(); i++) {
 		cout << endl << "Barcode number" << i + 1 << endl << endl;
 		string_string_map barcode_hash = counted_barcodes_hash[i];
 		for (const auto &myPair : barcode_hash) {
@@ -203,11 +203,11 @@ void SequenceFormat::print() {
 	cout << "-SEQUENCE FORMAT-" << endl;
 	cout << format_string << endl;
 	cout << "Length: " << length << endl << "Barcodes: " << barcodes[0];
-	for (int i = 1; i < barcodes.size(); ++i) {
+	for (size_t i = 1; i < barcodes.size(); ++i) {
 		cout << ", " << barcodes[i];
 	}
 	cout << endl;
-	for (int i = 0; i < length; ++i) {
+	for (size_t i = 0; i < length; ++i) {
 		cout << '-';
 	}
 	cout << endl << endl;
