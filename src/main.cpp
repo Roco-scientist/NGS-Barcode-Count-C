@@ -23,7 +23,8 @@ int main(int argc, char **argv) {
 	string sample_barcodes_file = "../test_del/sample_barcode_file.csv";
 	string counted_barcodes_file = "../test_del/test.bb_barcodes.csv";
 	string format_file = "../test_del/test.scheme.txt";
-	string fastq_path = "../test_del/test.double.fastq";
+	// string fastq_path = "../test_del/test.double.fastq";
+	string fastq_path = "../test_del/test_10000000.fastq";
 	int num_threads = 8;
 
 	// CLI::App app{"Counts barcodes located in sequencing data"};

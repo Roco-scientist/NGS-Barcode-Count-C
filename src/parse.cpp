@@ -2,8 +2,8 @@
 
 using namespace std;
 
-string SequenceParser::fix_sequence(string query_sequence,
-				    stringset subject_sequences,
+string SequenceParser::fix_sequence(string& query_sequence,
+				    stringset& subject_sequences,
 				    size_t max_errors) {
 	size_t best_mismatches = max_errors + 1;
 	string best_match = "None";
@@ -61,7 +61,7 @@ void SequenceParser::fix_constant() {
 	}
 }
 
-void SequenceParser::add_count(smatch barcode_match) {
+void SequenceParser::add_count(smatch& barcode_match) {
 	string sample_barcode;
 	vector<string> counted_barcodes;
 	unsigned int counted_barcode_index = 0;

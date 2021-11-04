@@ -30,11 +30,11 @@ class SequenceParser {
 	info::SequenceFormat sequence_format;
 	std::string sequence;
 
-	std::string fix_sequence(std::string query_sequence,
-				 stringset subject_sequences,
+	std::string fix_sequence(std::string& query_sequence,
+				 stringset& subject_sequences,
 				 size_t max_errors);
 	void fix_constant();
-	void add_count(std::smatch barcode_match);
+	void add_count(std::smatch& barcode_match);
 	void get_barcodes();
 	void run();
 };
