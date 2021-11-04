@@ -3,22 +3,22 @@
 using namespace std;
 
 string SequenceParser::fix_sequence(string query_sequence,
-				    vector<string> subject_sequences) {
-	size_t best_mismatches = query_sequence.size() / 5;
+				    stringset subject_sequences) {
+	size_t best_mismatches = (query_sequence.size() / 5) + 1;
 	string best_match = "None";
-	for (size_t i = 0; i < subject_sequences.size(); ++i) {
-		if (query_sequence.size() < subject_sequences[i].size()) {
+	for (auto const &subject_sequence : subject_sequences) {
+		if (query_sequence.size() < subject_sequence.size()) {
 			cout << "fix_sequence error: query_sequence "
 			     << query_sequence
 			     << " smaller than subject_sequence "
-			     << subject_sequences[i] << endl;
+			     << subject_sequence << endl;
 			exit(1);
 		}
 		unsigned int mismatches = 0;
 		for (size_t j = 0; j < query_sequence.size(); ++j) {
 			if ((query_sequence[j] != 'N' &&
-			     subject_sequences[i][j] != 'N') &&
-			    query_sequence[j] != subject_sequences[i][j]) {
+			     subject_sequence[j] != 'N') &&
+			    query_sequence[j] != subject_sequence[j]) {
 				++mismatches;
 			}
 			if (mismatches > best_mismatches) {
@@ -30,19 +30,18 @@ string SequenceParser::fix_sequence(string query_sequence,
 		}
 		if (mismatches < best_mismatches) {
 			best_mismatches = mismatches;
-			best_match = subject_sequences[i];
+			best_match = subject_sequence;
 		}
 	}
 	return best_match;
 }
 
 void SequenceParser::fix_constant() {
-	vector<string> subject_sequences;
+	stringset subject_sequences;
 	size_t length_diff = sequence.size() - sequence_format.length;
 	for (size_t i = 0; i < length_diff; ++i) {
-		string subject_seq =
-		    sequence.substr(i, sequence_format.length);
-		subject_sequences.push_back(subject_seq);
+		string subject_seq = sequence.substr(i, sequence_format.length);
+		subject_sequences.insert(subject_seq);
 	}
 	string best_match =
 	    fix_sequence(sequence_format.format_string, subject_sequences);
@@ -60,33 +59,45 @@ void SequenceParser::fix_constant() {
 	}
 }
 
+void SequenceParser::add_count(smatch barcode_match) {
+	string sample_barcode;
+	vector<string> counted_barcodes;
+	for (size_t i = 1; i < barcode_match.size(); ++i) {
+		if (sequence_format.barcodes[i - 1] == "sample") {
+			sample_barcode = barcode_match[i].str();
+		} else if (sequence_format.barcodes[i - 1] ==
+			   "counted_barcode") {
+			counted_barcodes.push_back(barcode_match[i].str());
+		}
+	}
+	if (barcode_conversion.samples_seqs.count(sample_barcode) == 0) {
+		sample_barcode = fix_sequence(sample_barcode, barcode_conversion.samples_seqs);
+	}
+	if (sample_barcode != "None") {
+		results.add_count(sample_barcode, counted_barcodes);
+	}
+}
+
 void SequenceParser::get_barcodes() {
 	smatch barcode_match;
 	if (regex_search(sequence, barcode_match,
 			 sequence_format.format_regex)) {
-		// for (size_t i = 1; i < barcode_match.size(); ++i) {
-		// 	cout << barcode_match[i].str() << '\t';
-		// }
-		// cout << endl;
+		add_count(barcode_match);
 	} else {
 		fix_constant();
 		if (regex_search(sequence, barcode_match,
 				 sequence_format.format_regex)) {
-			// cout << "fixed\t";
-			// for (size_t i = 1; i < barcode_match.size(); ++i) {
-			// 	cout << barcode_match[i].str() << '\t';
-			// }
-			// cout << endl;
+			add_count(barcode_match);
 		} else {
-			// cout << "No match" << endl;
 			return;
 		}
 	}
 }
 
 void SequenceParser::run() {
-	sequence = sequences.retrieve();
+	int read = 0;
 	while (sequence != "finished") {
+		++read;
 		sequence = sequences.retrieve();
 		if (sequence == "finished") {
 			break;

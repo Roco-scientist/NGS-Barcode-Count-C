@@ -29,7 +29,7 @@ vector<string> take_columns(int num_columns, string row) {
 	return data_points;
 }
 
-void BarcodeConversion::sample_barcode_conversion(string* barcode_path) {
+void BarcodeConversion::sample_barcode_conversion(string *barcode_path) {
 	if (*barcode_path == "default") {
 		return;
 	}
@@ -50,7 +50,7 @@ void BarcodeConversion::sample_barcode_conversion(string* barcode_path) {
 	}
 }
 
-void BarcodeConversion::barcode_file_conversion(string* barcode_path) {
+void BarcodeConversion::barcode_file_conversion(string *barcode_path) {
 	if (*barcode_path == "default") {
 		return;
 	}
@@ -108,8 +108,7 @@ void BarcodeConversion::barcode_file_conversion(string* barcode_path) {
 void BarcodeConversion::print() {
 	cout << "Sample barcode conversion" << endl;
 	for (const auto &[key, value] : samples_barcode_hash) {
-		cout << "Key:[" << key << "] Value:[" << value
-		     << "]\n";
+		cout << "Key:[" << key << "] Value:[" << value << "]\n";
 	}
 	cout << endl;
 
@@ -124,7 +123,7 @@ void BarcodeConversion::print() {
 	}
 }
 
-void SequenceFormat::build_regex(string* format_path) {
+void SequenceFormat::build_regex(string *format_path) {
 	// Open the file and handle not found errors
 	ifstream format_file;
 	format_file.open(*format_path);
@@ -171,8 +170,8 @@ void SequenceFormat::build_regex(string* format_path) {
 		if (match_str.find('{') != string::npos) {
 			barcode = true;
 			++barcode_num;
-			string group_name = "barcode";
-			group_name.append(to_string(barcode_num));
+			string group_name = "counted_barcode";
+			// group_name.append(to_string(barcode_num));
 			barcodes.push_back(group_name);
 		}
 		if (barcode) {
@@ -213,21 +212,33 @@ void SequenceFormat::print() {
 	cout << endl << endl;
 }
 
-void Results::new_results(vector<string>* _sample_seqs){
-	vector<string>& sample_seqs = *_sample_seqs;
+void Results::new_results(unordered_set<string> *_sample_seqs) {
+	unordered_set<string> &sample_seqs = *_sample_seqs;
 	string_int_map empty_map;
-	for (const auto &sample_seq: sample_seqs) {
-		results.insert(pair<string, string_int_map>(sample_seq, empty_map));
+	for (const auto &sample_seq : sample_seqs) {
+		results.insert(
+		    pair<string, string_int_map>(sample_seq, empty_map));
 	}
 };
 
-void Results::add_count(string sample_barcode, vector<string> counted_barcodes) {
+void Results::add_count(string sample_barcode,
+			vector<string> counted_barcodes) {
 	string counted_barcode_string;
-	for (auto const &barcode: counted_barcodes) {
+	for (string barcode : counted_barcodes) {
 		counted_barcode_string.append(barcode);
-		counted_barcode_string.push_back(' ');
+		counted_barcode_string.push_back(',');
 	}
 	counted_barcode_string.pop_back();
+	lock_guard<mutex> lg(mtx);
 	results[sample_barcode].try_emplace(counted_barcode_string, 0);
 	++results[sample_barcode][counted_barcode_string];
+};
+
+void Results::print() {
+	for (auto &[sample, barcodes] : results) {
+		for (auto &[barcode, value] : barcodes) {
+			cout << sample << '\t' << barcode << '\t' << value
+			     << endl;
+		}
+	}
 };

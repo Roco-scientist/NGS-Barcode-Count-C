@@ -4,6 +4,7 @@
 #include <iostream>
 #include <regex>
 #include <string>
+#include <mutex>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -61,15 +62,17 @@ class Results {
        public:
 	string_string_int_map results;
 
-	Results();
-	Results(std::vector<std::string>* sample_seqs) {
+	Results(std::unordered_set<std::string>* sample_seqs) {
 		new_results(sample_seqs);
 	};
-	void new_results(std::vector<std::string>* sample_seqs);
+	Results();
+	void new_results(std::unordered_set<std::string>* sample_seqs);
 	void add_count(std::string sample_barcode, std::vector<std::string> counted_barcodes);
 	void add_error();
+	void print();
 
        private:
+	std::mutex mtx;
 };
 
 #endif
