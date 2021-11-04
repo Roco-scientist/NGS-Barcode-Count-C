@@ -68,11 +68,20 @@ class Results {
 	Results();
 	void new_results(std::unordered_set<std::string>* sample_seqs);
 	void add_count(std::string sample_barcode, std::vector<std::string> counted_barcodes);
-	void add_error();
+	void add_constant_error();
+	void add_sample_barcode_error();
+	void add_counted_barcode_error();
 	void print();
+	void print_errors();
 
        private:
 	std::mutex mtx;
+	std::mutex mtx_const;
+	std::mutex mtx_samp;
+	std::mutex mtx_count;
+	unsigned int constant_errors = 0;
+	unsigned int sample_barcode_errors = 0;
+	unsigned int counted_barcode_errors = 0;
 };
 
 #endif

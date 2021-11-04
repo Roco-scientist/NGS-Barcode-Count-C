@@ -234,6 +234,21 @@ void Results::add_count(string sample_barcode,
 	++results[sample_barcode][counted_barcode_string];
 };
 
+void Results::add_constant_error(){
+	lock_guard<mutex> lg(mtx_const);
+	++constant_errors;
+}
+
+void Results::add_sample_barcode_error(){
+	lock_guard<mutex> lg(mtx_samp);
+	++sample_barcode_errors;
+}
+
+void Results::add_counted_barcode_error(){
+	lock_guard<mutex> lg(mtx_count);
+	++counted_barcode_errors;
+}
+
 void Results::print() {
 	for (auto &[sample, barcodes] : results) {
 		for (auto &[barcode, value] : barcodes) {
@@ -241,4 +256,10 @@ void Results::print() {
 			     << endl;
 		}
 	}
+};
+
+void Results::print_errors() {
+	cout << "Constant region errors: " << constant_errors << endl;
+	cout << "Sample barcode errors:  " << sample_barcode_errors << endl;
+	cout << "Counted barcode errors: " << counted_barcode_errors << endl;
 };

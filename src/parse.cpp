@@ -71,10 +71,13 @@ void SequenceParser::add_count(smatch barcode_match) {
 		}
 	}
 	if (barcode_conversion.samples_seqs.count(sample_barcode) == 0) {
-		sample_barcode = fix_sequence(sample_barcode, barcode_conversion.samples_seqs);
+		sample_barcode = fix_sequence(sample_barcode,
+					      barcode_conversion.samples_seqs);
 	}
 	if (sample_barcode != "None") {
 		results.add_count(sample_barcode, counted_barcodes);
+	} else {
+		results.add_sample_barcode_error();
 	}
 }
 
@@ -89,7 +92,7 @@ void SequenceParser::get_barcodes() {
 				 sequence_format.format_regex)) {
 			add_count(barcode_match);
 		} else {
-			return;
+			results.add_constant_error();
 		}
 	}
 }
@@ -104,8 +107,6 @@ void SequenceParser::run() {
 		}
 		if (sequence != "empty") {
 			get_barcodes();
-		} else {
-			cout << "empty" << endl;
 		}
 	}
 }

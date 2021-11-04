@@ -17,6 +17,7 @@ void read_fastq(string* fastq_path, Sequences& sequences) {
 			// cout << row << endl;
 			sequences.push(row);
 			++total_reads;
+			cout << "Total reads:            " << total_reads << '\r';
 		}
 		++line_num;
 		if (line_num == 5) {
@@ -26,5 +27,6 @@ void read_fastq(string* fastq_path, Sequences& sequences) {
 			break;
 		}
 	}
+	cout << endl;
 	sequences.push("finished");
 }

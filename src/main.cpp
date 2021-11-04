@@ -74,6 +74,6 @@ int main(int argc, char **argv) {
 	for (int i = 0; i < parsers.size(); ++i) {
 		parsers[i].join();
 	}
-	results.print();
+	results.print_errors();
 	return 0;
 }
