@@ -27,7 +27,7 @@ Currently supports FASTQ, sequence format, sample barcode conversion, and buildi
 
 ### Fastq File
 Accepts unzipped fastq files.<br>
-Accepts gzipped fastq files, but if the program stops before the expected number of sequencing reads, unzip and rerun.
+Gzipped fastq files not yet supported.
 
 ### Sequence Format File
 The sequence format file should be a text file that is line separated by the type of format.  The following is supported where the '#' should be replaced by the number of nucleotides corresponding to the barcode:<br>
