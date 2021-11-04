@@ -222,17 +222,10 @@ void Results::new_results(unordered_set<string> *_sample_seqs) {
 	}
 };
 
-void Results::add_count(string sample_barcode,
-			vector<string> counted_barcodes) {
-	string counted_barcode_string;
-	for (string barcode : counted_barcodes) {
-		counted_barcode_string.append(barcode);
-		counted_barcode_string.push_back(',');
-	}
-	counted_barcode_string.pop_back();
+void Results::add_count(string sample_barcode, string counted_barcodes) {
 	lock_guard<mutex> lg(mtx);
-	results[sample_barcode].try_emplace(counted_barcode_string, 0);
-	++results[sample_barcode][counted_barcode_string];
+	results[sample_barcode].try_emplace(counted_barcodes, 0);
+	++results[sample_barcode][counted_barcodes];
 	++correct_counts;
 };
 
@@ -267,13 +260,111 @@ void Results::print_errors() {
 	cout << "Counted barcode errors: " << counted_barcode_errors << endl;
 };
 
-void Results::to_csv(bool merged, BarcodeConversion barcode_conversion,
-		     string outpath) {
-	time_t now = time(0);
-	tm *ltm = localtime(&now);
-	
-	if (merged) {
-		ofstream merge_file;
-		merge_file.open(outpath);
+void Results::to_csv(bool merge, BarcodeConversion barcode_conversion,
+		     string outpath, int barcode_num) {
+	// Create outfile start
+	string file_start = outpath;
+	file_start.append(info::current_date());
+	file_start.push_back('_');
+
+	vector<string> sample_barcodes;
+	vector<string> sample_names;
+	for (auto &[sample_barcode, sample_name] :
+	     barcode_conversion.samples_barcode_hash) {
+		sample_barcodes.push_back(sample_barcode);
+		sample_names.push_back(sample_name);
+	}
+	vector<int> indices(sample_names.size());
+	iota(indices.begin(), indices.end(), 0);
+	sort(indices.begin(), indices.end(), [&](int A, int B) -> bool {
+		return sample_names[A] < sample_names[B];
+	});
+
+	string header = "Barcode_1";
+	for (auto i = 1; i < barcode_num; ++i) {
+		header.append(",Barcode_");
+		header.append(to_string(i + 1));
+	}
+	ofstream merge_file;
+	if (merge) {
+		string merge_path = file_start;
+		merge_path.append("merged.csv");
+		merge_file.open(merge_path);
+		string merge_header = header;
+		for (auto const index : indices) {
+			merge_header.push_back(',');
+			merge_header.append(sample_names[index]);
+		}
+		merge_file << merge_header << endl;
+	}
+
+	string sample_header = header;
+	sample_header.append(",Count");
+
+	unordered_set<string> finished_barcodes;
+	for (auto const index : indices) {
+		string sample_name = sample_names[index];
+		string sample_file_path = file_start;
+		sample_file_path.append(sample_name);
+		sample_file_path.append(".csv");
+		cout << "Writing " << sample_file_path << endl;
+
+		ofstream sample_file;
+		sample_file.open(sample_file_path);
+		sample_file << sample_header << endl;
+		for (auto const &[barcodes, count] :
+		     results[sample_barcodes[index]]) {
+			size_t pos = 0;
+			int barcode_index = 0;
+			string barcodes_tmp = barcodes;
+			string converted_barcode;
+			while ((pos = barcodes_tmp.find(',')) != string::npos) {
+				string barcode = barcodes_tmp.substr(0, pos);
+				string barcode_name =
+				    barcode_conversion
+					.counted_barcodes_hash[barcode_index]
+							      [barcode];
+				converted_barcode.append(barcode_name);
+				converted_barcode.push_back(',');
+				barcodes_tmp.erase(0, pos + 1);
+				++barcode_index;
+			}
+			string barcode_name =
+			    barcode_conversion
+				.counted_barcodes_hash[barcode_index]
+						      [barcodes_tmp];
+			converted_barcode.append(barcode_name);
+
+			sample_file << converted_barcode << ',' << count
+				    << endl;
+			if (merge) {
+				if (finished_barcodes.count(barcodes) == 0) {
+					merge_file << converted_barcode;
+					for (auto const index : indices) {
+						results[sample_barcodes[index]]
+						    .emplace(barcodes, 0);
+						merge_file
+						    << ','
+						    << results[sample_barcodes
+								   [index]]
+							      [barcodes];
+					}
+					merge_file << endl;
+					finished_barcodes.insert(barcodes);
+				}
+			}
+		}
 	}
 };
+
+string current_date() {
+	time_t now = time(0);
+	tm *ltm = localtime(&now);
+	string date;
+	date.append(to_string(ltm->tm_year + 1900));
+	date.push_back('-');
+	date.append(to_string(ltm->tm_mon + 1));
+	date.push_back('-');
+	date.append(to_string(ltm->tm_mday));
+	return date;
+}
