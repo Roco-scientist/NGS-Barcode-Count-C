@@ -5,9 +5,7 @@
 #include <queue>
 #include <thread>
 
-#include "CLI/App.hpp"
-#include "CLI/Config.hpp"
-#include "CLI/Formatter.hpp"
+#include "CLI11.hpp"
 // #include "argparse.h"
 #include "info.h"
 #include "input.h"
@@ -27,7 +25,7 @@ int main(int argc, char **argv) {
 	string fastq_path = "../test_del/test_10000000.fastq";
 	int num_threads = 8;
 
-	// CLI::App app{"Counts barcodes located in sequencing data"};
+	CLI::App app{"Counts barcodes located in sequencing data"};
 
 	// std::string sample_barcodes_file = "default";
 	// app.add_option("-s,--sample_barcodes", sample_barcodes_file,
