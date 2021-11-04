@@ -1,4 +1,4 @@
- add_definitions("-Wall" "-g" "--std=c++11")
+ add_definitions("-Wall" "-g" "--std=c++17")
  add_executable(barcode-count main.cpp info.cpp input.cpp parse.cpp)
  target_link_libraries(barcode-count ${CONAN_LIBS})
  set(CMAKE_CXX_STANDARD 11)
