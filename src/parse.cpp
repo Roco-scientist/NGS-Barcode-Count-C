@@ -62,12 +62,26 @@ void SequenceParser::fix_constant() {
 void SequenceParser::add_count(smatch barcode_match) {
 	string sample_barcode;
 	vector<string> counted_barcodes;
+	unsigned int counted_barcode_index = 0;
 	for (size_t i = 1; i < barcode_match.size(); ++i) {
 		if (sequence_format.barcodes[i - 1] == "sample") {
 			sample_barcode = barcode_match[i].str();
 		} else if (sequence_format.barcodes[i - 1] ==
 			   "counted_barcode") {
+			string counted_barcode = barcode_match[i].str();
+			if (barcode_conversion.counted_barcodes_seqs[counted_barcode_index]
+				.count(counted_barcode) == 0) {
+				counted_barcode = fix_sequence(
+				    counted_barcode,
+				    barcode_conversion
+					.counted_barcodes_seqs[counted_barcode_index]);
+				if (counted_barcode == "None") {
+					results.add_counted_barcode_error();
+					return;
+				}
+			}
 			counted_barcodes.push_back(barcode_match[i].str());
+			++counted_barcode_index;
 		}
 	}
 	if (barcode_conversion.samples_seqs.count(sample_barcode) == 0) {
