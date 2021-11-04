@@ -1,17 +1,19 @@
 #ifndef input
 #define input
 
+#include <chrono>
 #include <fstream>
 #include <iostream>
 #include <mutex>
 #include <queue>
+#include <thread>
 #include <vector>
 
 class Sequences {
        public:
 	Sequences(){};
 	std::string retrieve() {
-		std::lock_guard<std::mutex> lg(mtx);
+		std::scoped_lock<std::mutex> lg(mtx);
 		std::string sequence = "empty";
 		if (!seq_queue.empty()) {
 			sequence = seq_queue.front();
@@ -23,8 +25,17 @@ class Sequences {
 	}
 
 	void push(std::string sequence) {
-		std::lock_guard<std::mutex> lg(mtx);
-		seq_queue.push(sequence);
+		std::unique_lock<std::mutex> ulock(mtx);
+		if (seq_queue.size() < 10000) {
+			seq_queue.push(sequence);
+
+		} else {
+			ulock.unlock();
+			std::this_thread::sleep_for(
+			    std::chrono::milliseconds(10));
+			ulock.lock();
+			seq_queue.push(sequence);
+		}
 	}
 
        private:
