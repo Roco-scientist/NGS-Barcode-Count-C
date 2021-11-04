@@ -49,7 +49,8 @@ struct SequenceFormat {
 	std::regex format_regex;
 	std::string format_string;
 	unsigned int barcode_num;
-	unsigned int length;
+	size_t length;
+	size_t constant_size = 0;
 
 	void build_regex(std::string* format_path);
 	/// A print method created to test building of the algorithm
@@ -79,6 +80,7 @@ class Results {
 	std::mutex mtx_const;
 	std::mutex mtx_samp;
 	std::mutex mtx_count;
+	unsigned int correct_counts = 0;
 	unsigned int constant_errors = 0;
 	unsigned int sample_barcode_errors = 0;
 	unsigned int counted_barcode_errors = 0;

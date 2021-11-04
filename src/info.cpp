@@ -192,6 +192,7 @@ void SequenceFormat::build_regex(string *format_path) {
 		} else {
 			regex_string.append(match_str);
 			format_string.append(match_str);
+			constant_size += match_str.size();
 		}
 	}
 	format_regex.assign(regex_string, regex::icase);
@@ -232,6 +233,7 @@ void Results::add_count(string sample_barcode,
 	lock_guard<mutex> lg(mtx);
 	results[sample_barcode].try_emplace(counted_barcode_string, 0);
 	++results[sample_barcode][counted_barcode_string];
+	++correct_counts;
 };
 
 void Results::add_constant_error(){
@@ -259,6 +261,7 @@ void Results::print() {
 };
 
 void Results::print_errors() {
+	cout << "Counted:                " << correct_counts << endl;
 	cout << "Constant region errors: " << constant_errors << endl;
 	cout << "Sample barcode errors:  " << sample_barcode_errors << endl;
 	cout << "Counted barcode errors: " << counted_barcode_errors << endl;

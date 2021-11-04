@@ -3,8 +3,9 @@
 using namespace std;
 
 string SequenceParser::fix_sequence(string query_sequence,
-				    stringset subject_sequences) {
-	size_t best_mismatches = (query_sequence.size() / 5) + 1;
+				    stringset subject_sequences,
+				    size_t max_errors) {
+	size_t best_mismatches = max_errors + 1;
 	string best_match = "None";
 	for (auto const &subject_sequence : subject_sequences) {
 		if (query_sequence.size() < subject_sequence.size()) {
@@ -44,7 +45,8 @@ void SequenceParser::fix_constant() {
 		subject_sequences.insert(subject_seq);
 	}
 	string best_match =
-	    fix_sequence(sequence_format.format_string, subject_sequences);
+	    fix_sequence(sequence_format.format_string, subject_sequences,
+			 sequence_format.constant_size / 5);
 	if (best_match != "None") {
 		string fixed_sequence;
 		for (size_t i = 0; i < best_match.size(); ++i) {
@@ -69,12 +71,14 @@ void SequenceParser::add_count(smatch barcode_match) {
 		} else if (sequence_format.barcodes[i - 1] ==
 			   "counted_barcode") {
 			string counted_barcode = barcode_match[i].str();
-			if (barcode_conversion.counted_barcodes_seqs[counted_barcode_index]
+			if (barcode_conversion
+				.counted_barcodes_seqs[counted_barcode_index]
 				.count(counted_barcode) == 0) {
 				counted_barcode = fix_sequence(
 				    counted_barcode,
-				    barcode_conversion
-					.counted_barcodes_seqs[counted_barcode_index]);
+				    barcode_conversion.counted_barcodes_seqs
+					[counted_barcode_index],
+				    counted_barcode.size() / 5);
 				if (counted_barcode == "None") {
 					results.add_counted_barcode_error();
 					return;
@@ -86,7 +90,8 @@ void SequenceParser::add_count(smatch barcode_match) {
 	}
 	if (barcode_conversion.samples_seqs.count(sample_barcode) == 0) {
 		sample_barcode = fix_sequence(sample_barcode,
-					      barcode_conversion.samples_seqs);
+					      barcode_conversion.samples_seqs,
+					      sample_barcode.size() / 5);
 	}
 	if (sample_barcode != "None") {
 		results.add_count(sample_barcode, counted_barcodes);
