@@ -82,6 +82,8 @@ void SequenceParser::fix_constant() {
 			}
 		}
 		sequence = fixed_sequence;
+	} else {
+		sequence = best_match;
 	}
 }
 
