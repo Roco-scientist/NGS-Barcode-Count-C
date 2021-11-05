@@ -364,7 +364,9 @@ void Results::to_csv(bool merge, BarcodeConversion barcode_conversion,
 				}
 			}
 		}
+		sample_file.close();
 	}
+	merge_file.close();
 };
 
 string current_date() {
