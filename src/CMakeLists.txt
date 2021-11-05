@@ -1,7 +1,7 @@
  add_definitions("-Wall" "-g" "--std=c++17")
  add_executable(barcode-count main.cpp info.cpp input.cpp parser.cpp)
  target_link_libraries(barcode-count ${CONAN_LIBS})
- set(CMAKE_CXX_STANDARD 11)
+ set(CMAKE_CXX_STANDARD 17)
  set(CMAKE_CXX_STANDARD_REQUIRED True)
  set(THREADS_PREFER_PTHREAD_FLAG ON)
  find_package(Threads REQUIRED)
