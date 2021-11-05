@@ -18,9 +18,8 @@ void read_fastq(string* fastq_path, Sequences& sequences) {
 			sequences.push(row);
 			++total_reads;
 			if (total_reads % 1000 == 0) {
-				cout
-				    << "Total reads:            " << total_reads
-				    << '\r' << flush;
+				printf("Total reads:           %d\r", total_reads);
+				fflush(stdout);
 			}
 		}
 		++line_num;
