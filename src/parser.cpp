@@ -9,7 +9,7 @@ string SequenceParser::fix_sequence(string& query_sequence,
 	string none = "None";
 	const string* best_match = &none;
 	unsigned int mismatches;
-	for (auto &subject_sequence : subject_sequences) {
+	for (auto& subject_sequence : subject_sequences) {
 		if (query_sequence.size() < subject_sequence.size()) {
 			cout << "fix_sequence error: query_sequence "
 			     << query_sequence
@@ -43,7 +43,8 @@ void SequenceParser::fix_constant() {
 	stringset subject_sequences;
 	size_t length_diff = sequence.size() - sequence_format.length;
 	for (size_t i = 0; i < length_diff; ++i) {
-		subject_sequences.insert(sequence.substr(i, sequence_format.length));
+		subject_sequences.insert(
+		    sequence.substr(i, sequence_format.length));
 	}
 	string best_match =
 	    fix_sequence(sequence_format.format_string, subject_sequences,
