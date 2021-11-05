@@ -6,8 +6,10 @@ string SequenceParser::fix_sequence(string& query_sequence,
 				    stringset& subject_sequences,
 				    size_t max_errors) {
 	size_t best_mismatches = max_errors + 1;
-	string best_match = "None";
-	for (auto const &subject_sequence : subject_sequences) {
+	string none = "None";
+	const string* best_match = &none;
+	unsigned int mismatches;
+	for (auto &subject_sequence : subject_sequences) {
 		if (query_sequence.size() < subject_sequence.size()) {
 			cout << "fix_sequence error: query_sequence "
 			     << query_sequence
@@ -15,7 +17,7 @@ string SequenceParser::fix_sequence(string& query_sequence,
 			     << subject_sequence << endl;
 			exit(1);
 		}
-		unsigned int mismatches = 0;
+		mismatches = 0;
 		for (size_t j = 0; j < query_sequence.size(); ++j) {
 			if ((query_sequence[j] != 'N' &&
 			     subject_sequence[j] != 'N') &&
@@ -27,22 +29,21 @@ string SequenceParser::fix_sequence(string& query_sequence,
 			}
 		}
 		if (mismatches == best_mismatches) {
-			best_match = "None";
+			best_match = &none;
 		}
 		if (mismatches < best_mismatches) {
 			best_mismatches = mismatches;
-			best_match = subject_sequence;
+			best_match = &subject_sequence;
 		}
 	}
-	return best_match;
+	return *best_match;
 }
 
 void SequenceParser::fix_constant() {
 	stringset subject_sequences;
 	size_t length_diff = sequence.size() - sequence_format.length;
 	for (size_t i = 0; i < length_diff; ++i) {
-		string subject_seq = sequence.substr(i, sequence_format.length);
-		subject_sequences.insert(subject_seq);
+		subject_sequences.insert(sequence.substr(i, sequence_format.length));
 	}
 	string best_match =
 	    fix_sequence(sequence_format.format_string, subject_sequences,
