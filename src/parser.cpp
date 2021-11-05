@@ -51,7 +51,7 @@ string SequenceParser::fix_sequence(string& query_sequence,
 	return *best_match;
 }
 
-void SequenceParser::fix_constant() {
+bool SequenceParser::fix_constant() {
 	stringset subject_sequences;
 	// Get the length differene between the sequencing read and the sequence
 	// format in order to stop iterations before running out of the sequence
@@ -82,8 +82,9 @@ void SequenceParser::fix_constant() {
 			}
 		}
 		sequence = fixed_sequence;
+		return true;
 	} else {
-		sequence = best_match;
+		return false;
 	}
 }
 
@@ -158,8 +159,7 @@ void SequenceParser::get_barcodes() {
 			 sequence_format.format_regex)) {
 		add_count(barcode_match);
 	} else {
-		fix_constant();
-		if (sequence != "None") {
+		if (fix_constant()) {
 			if (regex_search(sequence, barcode_match,
 					 sequence_format.format_regex)) {
 				add_count(barcode_match);
