@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
 
 	// Get command line arguments
 	CLI::App app{
-	    "Counts barcodes located in sequencing data\nVersion: 0.1.3\n"};
+	    "NGS-Barcode-Count 0.1.3\nRory Coffey <coffeyrt@gmail.com>\nCounts barcodes located in sequencing data\n"};
 	app.set_version_flag("-v,--version", "0.1.3");
 
 	std::string sample_barcodes_file;
