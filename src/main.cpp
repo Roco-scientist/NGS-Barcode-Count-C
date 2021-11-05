@@ -53,9 +53,9 @@ int main(int argc, char** argv) {
 
 	// Get command line arguments
 	CLI::App app{
-	    "Barcode-Count 0.1.3\nRory Coffey <coffeyrt@gmail.com>\nCounts "
+	    "Barcode-Count 0.1.4\nRory Coffey <coffeyrt@gmail.com>\nCounts "
 	    "barcodes located in sequencing data\n"};
-	app.set_version_flag("-v,--version", "0.1.3");
+	app.set_version_flag("-v,--version", "0.1.4");
 
 	std::string sample_barcodes_file;
 	app.add_option("-s,--sample_barcodes", sample_barcodes_file,
