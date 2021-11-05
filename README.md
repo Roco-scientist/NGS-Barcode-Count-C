@@ -1,5 +1,5 @@
 # barcode-count
-C++ refactoring of <a href="https://github.com/Roco-scientist/NGS-Barcode-Count-dummy">NGS-Barcode-Count</a>.  Currently slower and not as versatile as NGS-Barcode-Count, which is written in Rust.
+C++ refactoring of <a href="https://github.com/Roco-scientist/NGS-Barcode-Count-dummy">NGS-Barcode-Count</a>.  Currently not as versatile as NGS-Barcode-Count, which is written in Rust.
 Does not yet collapse PCR duplicates with an included random barcode.
 
 ## Requirements
@@ -209,3 +209,16 @@ If `--merge_output` is called, an additional file is created with the format (fo
 </tr>
 </table>
 
+## Tests results
+On an 8 threaded i7-4790K CPU @ 4.00GHz with 16gb RAM, this algorithm was able to decode over 400 million sequencing reads in about a half hour.
+Results below:
+```
+Total reads:            418770347
+Counted:                257807865
+Constant region errors: 151955695
+Sample barcode errors:  3270100
+Counted barcode errors: 5736687
+Parsing time: 25 minutes 39.343 seconds
+Writing
+Total time: 32 minutes 45.029 seconds
+```
