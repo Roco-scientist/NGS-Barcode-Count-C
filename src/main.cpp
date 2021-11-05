@@ -73,8 +73,6 @@ int main(int argc, char** argv) {
 	sequence_format.build_regex(&format_file);
 	sequence_format.print();
 
-	atomic<bool> exit_thread;
-	exit_thread.store(false);
 	input::Sequences sequences;
 	thread reader([&]() { input::read_fastq(&fastq_path, sequences); });
 
