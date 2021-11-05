@@ -79,7 +79,7 @@ void BarcodeConversion::barcode_file_conversion(string *barcode_path) {
 
 	// Get total number of counted barcodes per sequence. ie for DEL this
 	// can be 3 or 4
-	int total_barcodes;
+	int total_barcodes = 0;
 	for (const auto &num : barcode_num) {
 		if (num > total_barcodes) {
 			total_barcodes = num;
@@ -364,7 +364,9 @@ void Results::to_csv(bool merge, BarcodeConversion barcode_conversion,
 				}
 			}
 		}
+		sample_file.close();
 	}
+	merge_file.close();
 };
 
 string current_date() {

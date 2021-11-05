@@ -50,8 +50,9 @@ class SequenceParser {
 				 stringset& subject_sequences,
 				 size_t max_errors);
 	/// Special method for fixing the constant region of the seqquencing
-	/// read if the regex was not able to find a match
-	void fix_constant();
+	/// read if the regex was not able to find a match.  If found, returns
+	/// true
+	bool fix_constant();
 	/// Add count to the Results object as long as sequencing errors can be
 	/// fixed
 	void add_count(std::smatch& barcode_match);
