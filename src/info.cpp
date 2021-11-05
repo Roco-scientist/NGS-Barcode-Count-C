@@ -42,6 +42,7 @@ void BarcodeConversion::sample_barcode_conversion(string *barcode_path) {
 
 	string row;
 	getline(barcode_file, row);  // The first row should be the header
+	// Get the rest of the rows and comma separate
 	for (string row; getline(barcode_file, row);) {
 		vector<string> row_vec = take_columns(2, row);
 		samples_barcode_hash.insert(
@@ -134,46 +135,51 @@ void SequenceFormat::build_regex(string *format_path) {
 
 	string format_data;
 	string row;
-	// Collect all comma separated rows and keep track of how many barcodes
+	// Collect all lines and make into a string without new line separators
 	for (string row; getline(format_file, row);) {
 		if (row.front() != '#') {
 			format_data.append(row);
 		}
 	}
 
-	//  cout << format_data << endl;
+	regex digit_search("[0-9]+");  // regex to pull out numbers
 
-	regex digit_search("[0-9]+");
-
+	// Regex which finds all barcode types within the format string above
 	regex barcode_search(R"((\{\d+\})|(\[\d+\])|(\(\d+\))|N+|[ATGC]+)",
 			     regex::icase);
 
-	smatch matches;
+	// setup for a regex iterator through the format string
 	auto words_begin = sregex_iterator(format_data.begin(),
 					   format_data.end(), barcode_search);
 	auto words_end = sregex_iterator();
 
 	barcode_num = 0;
 	string regex_string;
+	// Find all matches in format string and create a new regex string with
+	// capture groups for each DNA barcode.  Also create a string which does
+	// not have the captures and replaces all barcodes with N's.  This is
+	// used to correct for sequencing errors within the constant regions
 	for (sregex_iterator i = words_begin; i != words_end; ++i) {
 		bool barcode = false;
 		smatch match = *i;
 		string match_str = match.str();
+		// [#] indicates a sample barcode
 		if (match_str.find('[') != string::npos) {
 			barcode = true;
 			barcodes.push_back("sample");
 		}
+		// (#) indicates a random barcode
 		if (match_str.find('(') != string::npos) {
 			barcode = true;
 			barcodes.push_back("random");
 		}
+		// {#} indicates a counted barcode
 		if (match_str.find('{') != string::npos) {
 			barcode = true;
 			++barcode_num;
-			string group_name = "counted_barcode";
-			// group_name.append(to_string(barcode_num));
-			barcodes.push_back(group_name);
+			barcodes.push_back("counted_barcode");
 		}
+		// If a barcode was found, create a regex captures of [ATGCN]{#}
 		if (barcode) {
 			smatch digits_match;
 			regex_search(match_str, digits_match, digit_search);
@@ -185,11 +191,15 @@ void SequenceFormat::build_regex(string *format_path) {
 				format_string.push_back('N');
 			}
 		} else if (match_str.find('N') != string::npos) {
+			// If a barcode was not found, but a string of N's were
+			// found, place a non-capture [ATGCN]{# of N's}
 			regex_string.append("[ATGCN]{");
 			regex_string.append(to_string(match_str.size()));
 			regex_string.push_back('}');
 			format_string.append(match_str);
 		} else {
+			// If a string of A,T,G,or C's found, insert those into
+			// the regex string for the constant regions
 			regex_string.append(match_str);
 			format_string.append(match_str);
 			constant_size += match_str.size();
@@ -213,10 +223,10 @@ void SequenceFormat::print() {
 	cout << endl << endl;
 }
 
-void Results::new_results(unordered_set<string> *_sample_seqs) {
-	unordered_set<string> &sample_seqs = *_sample_seqs;
+void Results::new_results(unordered_set<string> *sample_seqs) {
+	// Create a results map with sample:counted_barcodes:count with the last two items empty
 	string_int_map empty_map;
-	for (const auto &sample_seq : sample_seqs) {
+	for (const auto &sample_seq : *sample_seqs) {
 		results.insert(
 		    pair<string, string_int_map>(sample_seq, empty_map));
 	}
