@@ -93,7 +93,7 @@ void SequenceParser::add_count(smatch& barcode_match) {
 	// A comma separated string to hold all of the counted barcodes.  This
 	// is later used as the key for a unordered_map in order to count
 	// occurances
-	string counted_barcodes;
+	string counted_barcodes, random_barcode;
 	// Start the barcode indexes and add every time a counted barcode is
 	// found
 	unsigned int counted_barcode_index = 0;
@@ -133,6 +133,8 @@ void SequenceParser::add_count(smatch& barcode_match) {
 			}
 			counted_barcodes.append(counted_barcode);
 			++counted_barcode_index;
+		} else if (sequence_format.barcodes[i - 1] == "random_barcode") {
+			random_barcode = barcode_match[i].str();
 		}
 	}
 	// If sample barcode is not within known sample barcodes, try to fix
@@ -145,7 +147,7 @@ void SequenceParser::add_count(smatch& barcode_match) {
 	// barcodes are good (checked previously), add the count, otherwise
 	// record the sample barcode error
 	if (sample_barcode != "None") {
-		results.add_count(sample_barcode, counted_barcodes);
+		results.add_count(sample_barcode, counted_barcodes, random_barcode);
 	} else {
 		results.add_sample_barcode_error();
 	}

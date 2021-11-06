@@ -12,6 +12,10 @@
 #include <vector>
 
 typedef std::unordered_map<std::string, std::string> string_string_map;
+typedef std::unordered_map<std::string, std::unordered_set<std::string>>
+    string_stringset_map;
+typedef std::unordered_map<std::string, string_stringset_map>
+    string_string_stringset_map;
 typedef std::unordered_map<std::string, unsigned int> string_int_map;
 typedef std::unordered_set<std::string> stringset;
 
@@ -96,6 +100,10 @@ class Results {
 	// Sample_barcode:counted_barcodes:count
 	string_string_int_map results;
 
+	// Same as results for when there is a random barcode included.  Holds
+	// Sample_barcode:counted_barcodes:random_barcodes
+	string_string_stringset_map results_random;
+
 	Results(std::unordered_set<std::string>* sample_seqs) {
 		new_results(sample_seqs);
 	};
@@ -106,12 +114,13 @@ class Results {
 	void new_results(std::unordered_set<std::string>* sample_seqs);
 	/// With the given sample barcode and counted barcodes, adds 1 with a
 	/// locked mutex
-	void add_count(std::string sample_barcode,
-		       std::string counted_barcodes);
+	void add_count(std::string sample_barcode, std::string counted_barcodes,
+		       std::string random_barcode);
 	/// The following three methods add one to each counted error
 	void add_constant_error();
 	void add_sample_barcode_error();
 	void add_counted_barcode_error();
+	void add_duplicate();
 	/// Prints for troubleshooting
 	void print();
 	/// Prints the error results to cout
@@ -128,11 +137,16 @@ class Results {
 	std::mutex mtx_const;
 	std::mutex mtx_samp;
 	std::mutex mtx_count;
+	std::mutex mtx_dup;
 	// The errors which are counted and kept track
 	unsigned int correct_counts = 0;
 	unsigned int constant_errors = 0;
 	unsigned int sample_barcode_errors = 0;
 	unsigned int counted_barcode_errors = 0;
+	unsigned int duplicates = 0;
+
+	// Used to insert into results_random
+	std::unordered_set<std::string> empty_set;
 };
 
 /// Creates the current data in the format of YYYY-MM-DD

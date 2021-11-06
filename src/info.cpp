@@ -224,19 +224,31 @@ void SequenceFormat::print() {
 }
 
 void Results::new_results(unordered_set<string> *sample_seqs) {
-	// Create a results map with sample:counted_barcodes:count with the last two items empty
-	string_int_map empty_map;
+	// Create a results map with sample:counted_barcodes:count with the last
+	// two items empty
+	string_int_map empty_int_map;
+	string_stringset_map empty_string_map;
 	for (const auto &sample_seq : *sample_seqs) {
 		results.insert(
-		    pair<string, string_int_map>(sample_seq, empty_map));
+		    pair<string, string_int_map>(sample_seq, empty_int_map));
+		results_random.insert(pair<string, string_stringset_map>(
+		    sample_seq, empty_string_map));
 	}
 };
 
-void Results::add_count(string sample_barcode, string counted_barcodes) {
+void Results::add_count(string sample_barcode, string counted_barcodes,
+			string random_barcode) {
 	lock_guard<mutex> lg(mtx);
-	results[sample_barcode].try_emplace(counted_barcodes, 0);
-	++results[sample_barcode][counted_barcodes];
-	++correct_counts;
+	if (random_barcode.empty()) {
+		results[sample_barcode].try_emplace(counted_barcodes, 0);
+		++results[sample_barcode][counted_barcodes];
+		++correct_counts;
+	}else{
+		results_random[sample_barcode].try_emplace(counted_barcodes, empty_set);
+		if (!results_random[sample_barcode][counted_barcodes].insert(random_barcode).second) {
+			add_duplicate();
+		}
+	}
 };
 
 void Results::add_constant_error() {
@@ -254,6 +266,11 @@ void Results::add_counted_barcode_error() {
 	++counted_barcode_errors;
 }
 
+void Results::add_duplicate() {
+	lock_guard<mutex> lg(mtx_dup);
+	++duplicates;
+}
+
 void Results::print() {
 	for (auto &[sample, barcodes] : results) {
 		for (auto &[barcode, value] : barcodes) {
@@ -268,6 +285,7 @@ void Results::print_errors() {
 	cout << "Constant region errors: " << constant_errors << endl;
 	cout << "Sample barcode errors:  " << sample_barcode_errors << endl;
 	cout << "Counted barcode errors: " << counted_barcode_errors << endl;
+	cout << "Duplicates:             " << duplicates << endl;
 };
 
 void Results::to_csv(bool merge, BarcodeConversion barcode_conversion,
