@@ -2,11 +2,11 @@
 #define input
 
 #include <chrono>
+#include <cstdio>
 #include <fstream>
 #include <iostream>
 #include <mutex>
 #include <queue>
-#include <cstdio>
 #include <thread>
 #include <vector>
 
@@ -61,6 +61,19 @@ class Sequences {
  * Read the fastq and post to the Sequences object.  When finished, it posts
  * "finished" in order to kill the parsing threads
  */
-void read_fastq(std::string* fastq_path, Sequences& sequences);
+class FastqReader {
+       public:
+	FastqReader(std::string* _fastq_path, Sequences& sequences)
+	    : sequences(sequences) {
+		fastq_path = _fastq_path;
+		read();
+	}
+	FastqReader();
+
+       private:
+	std::string* fastq_path;
+	Sequences& sequences;
+	void read();
+};
 
 #endif

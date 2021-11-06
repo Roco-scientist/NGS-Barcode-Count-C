@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
 	sequence_format.print();
 
 	input::Sequences sequences;
-	thread reader([&]() { input::read_fastq(&fastq_path, sequences); });
+	thread reader([&]() { input::FastqReader(&fastq_path, sequences); });
 
 	info::Results results(&barcode_info.samples_seqs);
 	vector<thread> parsers;
