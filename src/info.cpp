@@ -460,6 +460,7 @@ void Results::write_random(ofstream &sample_file, ofstream &merge_file,
 	// For the sample, iterate through the counted_barcodes->counts
 	for (auto const &[barcodes, random_barcodes] :
 	     results_random[sample_barcodes[index]]) {
+		auto count = random_barcodes.size();
 		string converted_barcode;
 		// If there isn't a counted_barcode conversion file, do not
 		// convert
@@ -469,7 +470,6 @@ void Results::write_random(ofstream &sample_file, ofstream &merge_file,
 			// Else convert by comma splitting the counted_barcodes
 			// string, convert, then reassemble into a new comma
 			// separated string
-			auto count = random_barcodes.size();
 			size_t pos = 0;
 			int barcode_index = 0;
 			string barcodes_tmp = barcodes;
