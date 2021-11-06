@@ -93,7 +93,7 @@ void SequenceParser::add_count(smatch& barcode_match) {
 	// A comma separated string to hold all of the counted barcodes.  This
 	// is later used as the key for a unordered_map in order to count
 	// occurances
-	string counted_barcodes;
+	string counted_barcodes, random_barcode;
 	// Start the barcode indexes and add every time a counted barcode is
 	// found
 	unsigned int counted_barcode_index = 0;
@@ -111,9 +111,13 @@ void SequenceParser::add_count(smatch& barcode_match) {
 			// If it is a counted barcode, check/fix for sequence
 			// errors, then push this to the counted barcodes string
 			string counted_barcode = barcode_match[i].str();
-			if (barcode_conversion
-				.counted_barcodes_seqs[counted_barcode_index]
-				.count(counted_barcode) == 0) {
+			// If there is a counted barcode conversion file and the
+			// counted barcode is not contained
+			if (!barcode_conversion.counted_barcodes_seqs.empty() &&
+			    barcode_conversion
+				    .counted_barcodes_seqs
+					[counted_barcode_index]
+				    .count(counted_barcode) == 0) {
 				counted_barcode = fix_sequence(
 				    counted_barcode,
 				    barcode_conversion.counted_barcodes_seqs
@@ -133,10 +137,14 @@ void SequenceParser::add_count(smatch& barcode_match) {
 			}
 			counted_barcodes.append(counted_barcode);
 			++counted_barcode_index;
+		} else if (sequence_format.barcodes[i - 1] ==
+			   "random") {
+			random_barcode = barcode_match[i].str();
 		}
 	}
 	// If sample barcode is not within known sample barcodes, try to fix
-	if (barcode_conversion.samples_seqs.count(sample_barcode) == 0) {
+	if (!sample_barcode.empty() &&
+	    barcode_conversion.samples_seqs.count(sample_barcode) == 0) {
 		sample_barcode = fix_sequence(sample_barcode,
 					      barcode_conversion.samples_seqs,
 					      sample_barcode.size() / 5);
@@ -144,8 +152,9 @@ void SequenceParser::add_count(smatch& barcode_match) {
 	// If the sample barcode could be fixed or is good, and all other
 	// barcodes are good (checked previously), add the count, otherwise
 	// record the sample barcode error
-	if (sample_barcode != "None") {
-		results.add_count(sample_barcode, counted_barcodes);
+	if (sample_barcode.empty() || sample_barcode != "None") {
+		results.add_count(sample_barcode, counted_barcodes,
+				  random_barcode);
 	} else {
 		results.add_sample_barcode_error();
 	}

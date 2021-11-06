@@ -1,5 +1,6 @@
 #ifndef info
 #define info
+#include <chrono>
 #include <ctime>
 #include <fstream>
 #include <iostream>
@@ -12,6 +13,10 @@
 #include <vector>
 
 typedef std::unordered_map<std::string, std::string> string_string_map;
+typedef std::unordered_map<std::string, std::unordered_set<std::string>>
+    string_stringset_map;
+typedef std::unordered_map<std::string, string_stringset_map>
+    string_string_stringset_map;
 typedef std::unordered_map<std::string, unsigned int> string_int_map;
 typedef std::unordered_set<std::string> stringset;
 
@@ -64,7 +69,7 @@ struct SequenceFormat {
 	// found
 	std::vector<std::string> barcodes;
 	// Whether or not a random barcode is included.  Not yet integrated
-	bool random_barcode;
+	bool random_barcode_included = false;
 	// The regex with captures which finds all of the DNA barcodes in the
 	// sequencing read
 	std::regex format_regex;
@@ -96,6 +101,10 @@ class Results {
 	// Sample_barcode:counted_barcodes:count
 	string_string_int_map results;
 
+	// Same as results for when there is a random barcode included.  Holds
+	// Sample_barcode:counted_barcodes:random_barcodes
+	string_string_stringset_map results_random;
+
 	Results(std::unordered_set<std::string>* sample_seqs) {
 		new_results(sample_seqs);
 	};
@@ -106,12 +115,14 @@ class Results {
 	void new_results(std::unordered_set<std::string>* sample_seqs);
 	/// With the given sample barcode and counted barcodes, adds 1 with a
 	/// locked mutex
-	void add_count(std::string sample_barcode,
-		       std::string counted_barcodes);
+	void add_count(std::string& sample_barcode,
+		       std::string& counted_barcodes,
+		       std::string& random_barcode);
 	/// The following three methods add one to each counted error
 	void add_constant_error();
 	void add_sample_barcode_error();
 	void add_counted_barcode_error();
+	void add_duplicate();
 	/// Prints for troubleshooting
 	void print();
 	/// Prints the error results to cout
@@ -119,7 +130,8 @@ class Results {
 	/// Writes the results to csv files in the format
 	/// YYYY-MM-DD_sample_name.csv
 	void to_csv(bool merge, BarcodeConversion barcode_conversion,
-		    std::string outpath, int barcode_num);
+		    std::string outpath, int barcode_num,
+		    bool random_barcode_included);
 
        private:
 	// Four different mutexes to be locked for either counting or keeping
@@ -128,14 +140,33 @@ class Results {
 	std::mutex mtx_const;
 	std::mutex mtx_samp;
 	std::mutex mtx_count;
+	std::mutex mtx_dup;
 	// The errors which are counted and kept track
 	unsigned int correct_counts = 0;
 	unsigned int constant_errors = 0;
 	unsigned int sample_barcode_errors = 0;
 	unsigned int counted_barcode_errors = 0;
+	unsigned int duplicates = 0;
+
+	// Used to insert into results_random
+	std::unordered_set<std::string> empty_set;
+
+	std::unordered_set<std::string> finished_barcodes;
+	std::vector<std::string> sample_barcodes;
+	std::vector<std::string> sample_names;
+	BarcodeConversion barcode_conversion;
+	std::string no_sample_barcode = "barcode_counts";
+
+	void write_counts(std::ofstream& sample_file, std::ofstream& merge_file,
+			  int index, std::vector<int>& indices, bool merge);
+	void write_random(std::ofstream& sample_file, std::ofstream& merge_file,
+			  int index, std::vector<int>& indices, bool merge);
 };
 
 /// Creates the current data in the format of YYYY-MM-DD
 std::string current_date();
+
+// Returns a string of the hours, minutes, and seconds passed since start
+std::string time_passed(std::chrono::steady_clock::time_point start);
 
 #endif

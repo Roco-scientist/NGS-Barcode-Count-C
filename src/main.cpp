@@ -14,59 +14,23 @@
 
 using namespace std;
 
-string time_passed(chrono::steady_clock::time_point start) {
-	// Get total time and output to cout
-	chrono::steady_clock::time_point finish = chrono::steady_clock::now();
-	string milliseconds = to_string(
-	    chrono::duration_cast<chrono::milliseconds>(finish - start)
-		.count() %
-	    1000);
-	// 0 padd milliseconds so it can be used as a fraction seconds
-	while (milliseconds.size() < 3) {
-		string millisecondes_temp = "0";
-		millisecondes_temp.append(milliseconds);
-		milliseconds = millisecondes_temp;
-	}
-	int total_seconds_passed =
-	    chrono::duration_cast<chrono::seconds>(finish - start).count();
-	int seconds = total_seconds_passed % 60;
-	int minutes = (total_seconds_passed % 3600) / 60;
-	int hours = total_seconds_passed / 3600;
-	string time_passed;
-	if (hours > 0) {
-		time_passed.append(to_string(hours));
-		time_passed.append(" hours ");
-	}
-	if (minutes > 0) {
-		time_passed.append(to_string(minutes));
-		time_passed.append(" minutes ");
-	}
-	time_passed.append(to_string(seconds));
-	time_passed.push_back('.');
-	time_passed.append(milliseconds);
-	time_passed.append(" seconds\n");
-	return time_passed;
-}
-
 int main(int argc, char** argv) {
 	chrono::steady_clock::time_point start = chrono::steady_clock::now();
 
 	// Get command line arguments
 	CLI::App app{
-	    "Barcode-Count 0.1.4\nRory Coffey <coffeyrt@gmail.com>\nCounts "
+	    "Barcode-Count 0.2.0\nRory Coffey <coffeyrt@gmail.com>\nCounts "
 	    "barcodes located in sequencing data\n"};
-	app.set_version_flag("-v,--version", "0.1.4");
+	app.set_version_flag("-v,--version", "0.2.0");
 
 	std::string sample_barcodes_file;
 	app.add_option("-s,--sample_barcodes", sample_barcodes_file,
 		       "Sample barcodes csv file")
-	    ->required()
 	    ->check(CLI::ExistingFile);
 
 	std::string counted_barcodes_file;
 	app.add_option("-c,--counted_barcodes", counted_barcodes_file,
 		       "Building block barcodes csv file")
-	    ->required()
 	    ->check(CLI::ExistingFile);
 
 	std::string format_file;
@@ -126,10 +90,11 @@ int main(int argc, char** argv) {
 		parsers[i].join();
 	}
 	results.print_errors();
-	cout << "Parsing time: " << time_passed(start);
+	cout << "\nParsing time: " << info::time_passed(start) << endl;
 	results.to_csv(merge, barcode_info, outpath,
-		       sequence_format.barcode_num);
+		       sequence_format.barcode_num,
+		       sequence_format.random_barcode_included);
 
-	cout << "Total time: " << time_passed(start);
+	cout << "\nTotal time: " << info::time_passed(start);
 	return 0;
 }
