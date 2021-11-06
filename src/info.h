@@ -115,8 +115,9 @@ class Results {
 	void new_results(std::unordered_set<std::string>* sample_seqs);
 	/// With the given sample barcode and counted barcodes, adds 1 with a
 	/// locked mutex
-	void add_count(std::string sample_barcode, std::string counted_barcodes,
-		       std::string random_barcode);
+	void add_count(std::string& sample_barcode,
+		       std::string& counted_barcodes,
+		       std::string& random_barcode);
 	/// The following three methods add one to each counted error
 	void add_constant_error();
 	void add_sample_barcode_error();
@@ -154,6 +155,7 @@ class Results {
 	std::vector<std::string> sample_barcodes;
 	std::vector<std::string> sample_names;
 	BarcodeConversion barcode_conversion;
+	std::string no_sample_barcode = "barcode_counts";
 
 	void write_counts(std::ofstream& sample_file, std::ofstream& merge_file,
 			  int index, std::vector<int>& indices, bool merge);

@@ -26,13 +26,11 @@ int main(int argc, char** argv) {
 	std::string sample_barcodes_file;
 	app.add_option("-s,--sample_barcodes", sample_barcodes_file,
 		       "Sample barcodes csv file")
-	    ->required()
 	    ->check(CLI::ExistingFile);
 
 	std::string counted_barcodes_file;
 	app.add_option("-c,--counted_barcodes", counted_barcodes_file,
 		       "Building block barcodes csv file")
-	    ->required()
 	    ->check(CLI::ExistingFile);
 
 	std::string format_file;
