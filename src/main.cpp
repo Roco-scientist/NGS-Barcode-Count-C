@@ -92,11 +92,11 @@ int main(int argc, char** argv) {
 		parsers[i].join();
 	}
 	results.print_errors();
-	cout << "Parsing time: " << info::time_passed(start);
+	cout << "\nParsing time: " << info::time_passed(start) << endl;
 	results.to_csv(merge, barcode_info, outpath,
 		       sequence_format.barcode_num,
 		       sequence_format.random_barcode_included);
 
-	cout << "Total time: " << info::time_passed(start);
+	cout << "\nTotal time: " << info::time_passed(start);
 	return 0;
 }

@@ -440,9 +440,21 @@ string current_date() {
 	string date;
 	date.append(to_string(ltm->tm_year + 1900));
 	date.push_back('-');
-	date.append(to_string(ltm->tm_mon + 1));
+	string month = to_string(ltm->tm_mon + 1);
+	if (month.size() == 1){
+		string zero_pad = "0";
+		zero_pad.append(month);
+		month = zero_pad;
+	}
+	date.append(month);
 	date.push_back('-');
-	date.append(to_string(ltm->tm_mday));
+	string day = to_string(ltm->tm_mday);
+	if (day.size() == 1){
+		string zero_pad = "0";
+		zero_pad.append(day);
+		day = zero_pad;
+	}
+	date.append(day);
 	return date;
 }
 
