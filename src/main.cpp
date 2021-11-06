@@ -14,40 +14,6 @@
 
 using namespace std;
 
-string time_passed(chrono::steady_clock::time_point start) {
-	// Get total time and output to cout
-	chrono::steady_clock::time_point finish = chrono::steady_clock::now();
-	string milliseconds = to_string(
-	    chrono::duration_cast<chrono::milliseconds>(finish - start)
-		.count() %
-	    1000);
-	// 0 padd milliseconds so it can be used as a fraction seconds
-	while (milliseconds.size() < 3) {
-		string millisecondes_temp = "0";
-		millisecondes_temp.append(milliseconds);
-		milliseconds = millisecondes_temp;
-	}
-	int total_seconds_passed =
-	    chrono::duration_cast<chrono::seconds>(finish - start).count();
-	int seconds = total_seconds_passed % 60;
-	int minutes = (total_seconds_passed % 3600) / 60;
-	int hours = total_seconds_passed / 3600;
-	string time_passed;
-	if (hours > 0) {
-		time_passed.append(to_string(hours));
-		time_passed.append(" hours ");
-	}
-	if (minutes > 0) {
-		time_passed.append(to_string(minutes));
-		time_passed.append(" minutes ");
-	}
-	time_passed.append(to_string(seconds));
-	time_passed.push_back('.');
-	time_passed.append(milliseconds);
-	time_passed.append(" seconds\n");
-	return time_passed;
-}
-
 int main(int argc, char** argv) {
 	chrono::steady_clock::time_point start = chrono::steady_clock::now();
 
@@ -126,10 +92,11 @@ int main(int argc, char** argv) {
 		parsers[i].join();
 	}
 	results.print_errors();
-	cout << "Parsing time: " << time_passed(start);
+	cout << "Parsing time: " << info::time_passed(start);
 	results.to_csv(merge, barcode_info, outpath,
-		       sequence_format.barcode_num);
+		       sequence_format.barcode_num,
+		       sequence_format.random_barcode_included);
 
-	cout << "Total time: " << time_passed(start);
+	cout << "Total time: " << info::time_passed(start);
 	return 0;
 }

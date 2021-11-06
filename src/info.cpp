@@ -172,6 +172,7 @@ void SequenceFormat::build_regex(string *format_path) {
 		if (match_str.find('(') != string::npos) {
 			barcode = true;
 			barcodes.push_back("random");
+			random_barcode_included = true;
 		}
 		// {#} indicates a counted barcode
 		if (match_str.find('{') != string::npos) {
@@ -243,9 +244,12 @@ void Results::add_count(string sample_barcode, string counted_barcodes,
 		results[sample_barcode].try_emplace(counted_barcodes, 0);
 		++results[sample_barcode][counted_barcodes];
 		++correct_counts;
-	}else{
-		results_random[sample_barcode].try_emplace(counted_barcodes, empty_set);
-		if (!results_random[sample_barcode][counted_barcodes].insert(random_barcode).second) {
+	} else {
+		results_random[sample_barcode].try_emplace(counted_barcodes,
+							   empty_set);
+		if (!results_random[sample_barcode][counted_barcodes]
+			 .insert(random_barcode)
+			 .second) {
 			add_duplicate();
 		}
 	}
@@ -288,15 +292,15 @@ void Results::print_errors() {
 	cout << "Duplicates:             " << duplicates << endl;
 };
 
-void Results::to_csv(bool merge, BarcodeConversion barcode_conversion,
-		     string outpath, int barcode_num) {
+void Results::to_csv(bool merge, BarcodeConversion _barcode_conversion,
+		     string outpath, int barcode_num,
+		     bool random_barcode_included) {
+	barcode_conversion = _barcode_conversion;
 	// Create outfile start
 	string file_start = outpath;
 	file_start.append(info::current_date());
 	file_start.push_back('_');
 
-	vector<string> sample_barcodes;
-	vector<string> sample_names;
 	for (auto &[sample_barcode, sample_name] :
 	     barcode_conversion.samples_barcode_hash) {
 		sample_barcodes.push_back(sample_barcode);
@@ -329,7 +333,6 @@ void Results::to_csv(bool merge, BarcodeConversion barcode_conversion,
 	string sample_header = header;
 	sample_header.append(",Count");
 
-	unordered_set<string> finished_barcodes;
 	for (auto const index : indices) {
 		string sample_name = sample_names[index];
 		string sample_file_path = file_start;
@@ -340,51 +343,95 @@ void Results::to_csv(bool merge, BarcodeConversion barcode_conversion,
 		ofstream sample_file;
 		sample_file.open(sample_file_path);
 		sample_file << sample_header << endl;
-		for (auto const &[barcodes, count] :
-		     results[sample_barcodes[index]]) {
-			size_t pos = 0;
-			int barcode_index = 0;
-			string barcodes_tmp = barcodes;
-			string converted_barcode;
-			while ((pos = barcodes_tmp.find(',')) != string::npos) {
-				string barcode = barcodes_tmp.substr(0, pos);
-				string barcode_name =
-				    barcode_conversion
-					.counted_barcodes_hash[barcode_index]
-							      [barcode];
-				converted_barcode.append(barcode_name);
-				converted_barcode.push_back(',');
-				barcodes_tmp.erase(0, pos + 1);
-				++barcode_index;
-			}
-			string barcode_name =
-			    barcode_conversion
-				.counted_barcodes_hash[barcode_index]
-						      [barcodes_tmp];
-			converted_barcode.append(barcode_name);
-
-			sample_file << converted_barcode << ',' << count
-				    << endl;
-			if (merge) {
-				if (finished_barcodes.count(barcodes) == 0) {
-					merge_file << converted_barcode;
-					for (auto const index : indices) {
-						results[sample_barcodes[index]]
-						    .emplace(barcodes, 0);
-						merge_file
-						    << ','
-						    << results[sample_barcodes
-								   [index]]
-							      [barcodes];
-					}
-					merge_file << endl;
-					finished_barcodes.insert(barcodes);
-				}
-			}
+		if (random_barcode_included) {
+			write_random(sample_file, merge_file, index, indices, merge);
+		} else {
+			write_counts(sample_file, merge_file, index, indices, merge);
 		}
 		sample_file.close();
 	}
 	merge_file.close();
+};
+
+void Results::write_counts(ofstream &sample_file, ofstream &merge_file,
+			   int index, vector<int> &indices, bool merge) {
+	for (auto const &[barcodes, count] : results[sample_barcodes[index]]) {
+		size_t pos = 0;
+		int barcode_index = 0;
+		string barcodes_tmp = barcodes;
+		string converted_barcode;
+		while ((pos = barcodes_tmp.find(',')) != string::npos) {
+			string barcode = barcodes_tmp.substr(0, pos);
+			string barcode_name =
+			    barcode_conversion
+				.counted_barcodes_hash[barcode_index][barcode];
+			converted_barcode.append(barcode_name);
+			converted_barcode.push_back(',');
+			barcodes_tmp.erase(0, pos + 1);
+			++barcode_index;
+		}
+		string barcode_name =
+		    barcode_conversion
+			.counted_barcodes_hash[barcode_index][barcodes_tmp];
+		converted_barcode.append(barcode_name);
+
+		sample_file << converted_barcode << ',' << count << endl;
+		if (merge) {
+			if (finished_barcodes.insert(barcodes).second) {
+				merge_file << converted_barcode;
+				for (auto const index : indices) {
+					results[sample_barcodes[index]].emplace(
+					    barcodes, 0);
+					merge_file
+					    << ','
+					    << results[sample_barcodes[index]]
+						      [barcodes];
+				}
+				merge_file << endl;
+			}
+		}
+	}
+};
+
+void Results::write_random(ofstream &sample_file, ofstream &merge_file,
+		int index, vector<int> &indices, bool merge){
+	for (auto const &[barcodes, random_barcodes] : results_random[sample_barcodes[index]]) {
+		auto count = random_barcodes.size();
+		size_t pos = 0;
+		int barcode_index = 0;
+		string barcodes_tmp = barcodes;
+		string converted_barcode;
+		while ((pos = barcodes_tmp.find(',')) != string::npos) {
+			string barcode = barcodes_tmp.substr(0, pos);
+			string barcode_name =
+			    barcode_conversion
+				.counted_barcodes_hash[barcode_index][barcode];
+			converted_barcode.append(barcode_name);
+			converted_barcode.push_back(',');
+			barcodes_tmp.erase(0, pos + 1);
+			++barcode_index;
+		}
+		string barcode_name =
+		    barcode_conversion
+			.counted_barcodes_hash[barcode_index][barcodes_tmp];
+		converted_barcode.append(barcode_name);
+
+		sample_file << converted_barcode << ',' << count << endl;
+		if (merge) {
+			if (finished_barcodes.insert(barcodes).second) {
+				merge_file << converted_barcode;
+				for (auto const index : indices) {
+					results_random[sample_barcodes[index]].emplace(
+					    barcodes, empty_set);
+					merge_file
+					    << ','
+					    << results_random[sample_barcodes[index]]
+						      [barcodes].size();
+				}
+				merge_file << endl;
+			}
+		}
+	}
 };
 
 string current_date() {
@@ -398,3 +445,38 @@ string current_date() {
 	date.append(to_string(ltm->tm_mday));
 	return date;
 }
+
+string time_passed(chrono::steady_clock::time_point start) {
+	// Get total time and output to cout
+	chrono::steady_clock::time_point finish = chrono::steady_clock::now();
+	string milliseconds = to_string(
+	    chrono::duration_cast<chrono::milliseconds>(finish - start)
+		.count() %
+	    1000);
+	// 0 padd milliseconds so it can be used as a fraction seconds
+	while (milliseconds.size() < 3) {
+		string millisecondes_temp = "0";
+		millisecondes_temp.append(milliseconds);
+		milliseconds = millisecondes_temp;
+	}
+	int total_seconds_passed =
+	    chrono::duration_cast<chrono::seconds>(finish - start).count();
+	int seconds = total_seconds_passed % 60;
+	int minutes = (total_seconds_passed % 3600) / 60;
+	int hours = total_seconds_passed / 3600;
+	string time_passed;
+	if (hours > 0) {
+		time_passed.append(to_string(hours));
+		time_passed.append(" hours ");
+	}
+	if (minutes > 0) {
+		time_passed.append(to_string(minutes));
+		time_passed.append(" minutes ");
+	}
+	time_passed.append(to_string(seconds));
+	time_passed.push_back('.');
+	time_passed.append(milliseconds);
+	time_passed.append(" seconds\n");
+	return time_passed;
+}
+

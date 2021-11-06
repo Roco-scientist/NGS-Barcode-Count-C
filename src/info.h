@@ -1,5 +1,6 @@
 #ifndef info
 #define info
+#include <chrono>
 #include <ctime>
 #include <fstream>
 #include <iostream>
@@ -68,7 +69,7 @@ struct SequenceFormat {
 	// found
 	std::vector<std::string> barcodes;
 	// Whether or not a random barcode is included.  Not yet integrated
-	bool random_barcode;
+	bool random_barcode_included = false;
 	// The regex with captures which finds all of the DNA barcodes in the
 	// sequencing read
 	std::regex format_regex;
@@ -128,7 +129,8 @@ class Results {
 	/// Writes the results to csv files in the format
 	/// YYYY-MM-DD_sample_name.csv
 	void to_csv(bool merge, BarcodeConversion barcode_conversion,
-		    std::string outpath, int barcode_num);
+		    std::string outpath, int barcode_num,
+		    bool random_barcode_included);
 
        private:
 	// Four different mutexes to be locked for either counting or keeping
@@ -147,9 +149,22 @@ class Results {
 
 	// Used to insert into results_random
 	std::unordered_set<std::string> empty_set;
+
+	std::unordered_set<std::string> finished_barcodes;
+	std::vector<std::string> sample_barcodes;
+	std::vector<std::string> sample_names;
+	BarcodeConversion barcode_conversion;
+
+	void write_counts(std::ofstream& sample_file, std::ofstream& merge_file,
+			  int index, std::vector<int>& indices, bool merge);
+	void write_random(std::ofstream& sample_file, std::ofstream& merge_file,
+			  int index, std::vector<int>& indices, bool merge);
 };
 
 /// Creates the current data in the format of YYYY-MM-DD
 std::string current_date();
+
+// Returns a string of the hours, minutes, and seconds passed since start
+std::string time_passed(std::chrono::steady_clock::time_point start);
 
 #endif
