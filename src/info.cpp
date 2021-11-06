@@ -314,27 +314,39 @@ void Results::to_csv(bool merge, BarcodeConversion _barcode_conversion,
 	file_start.append(info::current_date());
 	file_start.push_back('_');
 
+	// If there wasn't a sample barcode file, fill with 'barcode_count'
 	if (barcode_conversion.samples_barcode_hash.empty()) {
 		sample_barcodes.push_back(no_sample_barcode);
 		sample_names.push_back(no_sample_barcode);
 	} else {
+		// Otherwise create vectors of sample barcodes and sample names.
+		// These are used to sort in the alphabetical order of the
+		// sample names
 		for (auto &[sample_barcode, sample_name] :
 		     barcode_conversion.samples_barcode_hash) {
 			sample_barcodes.push_back(sample_barcode);
 			sample_names.push_back(sample_name);
 		}
 	}
+
+	// Create indexes for the sample_barcodes in the alphabetical order of
+	// the sample names
 	vector<int> indices(sample_names.size());
 	iota(indices.begin(), indices.end(), 0);
 	sort(indices.begin(), indices.end(), [&](int A, int B) -> bool {
 		return sample_names[A] < sample_names[B];
 	});
 
+	// Create the file header for the merged file and the sample files.
+	// These all start with Barcode_1, Barcode_2...Barcode_N
 	string header = "Barcode_1";
 	for (auto i = 1; i < barcode_num; ++i) {
 		header.append(",Barcode_");
 		header.append(to_string(i + 1));
 	}
+
+	// Craete the ofstream merge_file object and if merge was called within
+	// the arguments, add a header to the merge file
 	ofstream merge_file;
 	if (merge) {
 		string merge_path = file_start;
@@ -348,19 +360,32 @@ void Results::to_csv(bool merge, BarcodeConversion _barcode_conversion,
 		merge_file << merge_header << endl;
 	}
 
+	// Create the header for all of the sample count files.  These will be
+	// Barcode_1..Barcode_N, Count
 	string sample_header = header;
 	sample_header.append(",Count");
 
+	// Write the sample files in the order of sample names.  This is doen in
+	// order because of the merge file columns need to always be in the same
+	// order
 	for (auto const index : indices) {
+		// Create the sample file path
 		string sample_name = sample_names[index];
 		string sample_file_path = file_start;
 		sample_file_path.append(sample_name);
 		sample_file_path.append("_counts.csv");
 		cout << "Writing " << sample_file_path << endl;
 
+		// Create the sample file, open, and add the header
 		ofstream sample_file;
 		sample_file.open(sample_file_path);
 		sample_file << sample_header << endl;
+
+		// Writing is different depending on if a random barcode is
+		// included.  This is because without the random barcode, the
+		// last value in the map is the count.  With the random barcode,
+		// the last value holds a set of random barcodes.  This set is
+		// counted to find the count
 		if (random_barcode_included) {
 			write_random(sample_file, merge_file, index, indices,
 				     merge);
@@ -375,14 +400,20 @@ void Results::to_csv(bool merge, BarcodeConversion _barcode_conversion,
 
 void Results::write_counts(ofstream &sample_file, ofstream &merge_file,
 			   int index, vector<int> &indices, bool merge) {
+	// For the sample, iterate through the counted_barcodes->counts
 	for (auto const &[barcodes, count] : results[sample_barcodes[index]]) {
-		size_t pos = 0;
-		int barcode_index = 0;
-		string barcodes_tmp = barcodes;
 		string converted_barcode;
+		// If there isn't a counted_barcode conversion file, do not
+		// convert
 		if (barcode_conversion.counted_barcodes_hash.empty()) {
 			converted_barcode = barcodes;
 		} else {
+			// Else convert by comma splitting the counted_barcodes
+			// string, convert, then reassemble into a new comma
+			// separated string
+			size_t pos = 0;
+			int barcode_index = 0;
+			string barcodes_tmp = barcodes;
 			while ((pos = barcodes_tmp.find(',')) != string::npos) {
 				string barcode = barcodes_tmp.substr(0, pos);
 				string barcode_name =
@@ -401,7 +432,12 @@ void Results::write_counts(ofstream &sample_file, ofstream &merge_file,
 			converted_barcode.append(barcode_name);
 		}
 
+		// Add the comma separated barcodes and the count to the file
 		sample_file << converted_barcode << ',' << count << endl;
+		// If merege is called, check to see if the barcodes have
+		// already been added to the merge file.  If not, add the
+		// counted barcodes, then itereate through each sample and add
+		// the count for each in order
 		if (merge) {
 			if (finished_barcodes.insert(barcodes).second) {
 				merge_file << converted_barcode;
@@ -421,16 +457,22 @@ void Results::write_counts(ofstream &sample_file, ofstream &merge_file,
 
 void Results::write_random(ofstream &sample_file, ofstream &merge_file,
 			   int index, vector<int> &indices, bool merge) {
+	// For the sample, iterate through the counted_barcodes->counts
 	for (auto const &[barcodes, random_barcodes] :
 	     results_random[sample_barcodes[index]]) {
-		auto count = random_barcodes.size();
-		size_t pos = 0;
-		int barcode_index = 0;
-		string barcodes_tmp = barcodes;
 		string converted_barcode;
+		// If there isn't a counted_barcode conversion file, do not
+		// convert
 		if (barcode_conversion.counted_barcodes_hash.empty()) {
 			converted_barcode = barcodes;
 		} else {
+			// Else convert by comma splitting the counted_barcodes
+			// string, convert, then reassemble into a new comma
+			// separated string
+			auto count = random_barcodes.size();
+			size_t pos = 0;
+			int barcode_index = 0;
+			string barcodes_tmp = barcodes;
 			while ((pos = barcodes_tmp.find(',')) != string::npos) {
 				string barcode = barcodes_tmp.substr(0, pos);
 				string barcode_name =
@@ -449,7 +491,12 @@ void Results::write_random(ofstream &sample_file, ofstream &merge_file,
 			converted_barcode.append(barcode_name);
 		}
 
+		// Add the comma separated barcodes and the count to the file
 		sample_file << converted_barcode << ',' << count << endl;
+		// If merege is called, check to see if the barcodes have
+		// already been added to the merge file.  If not, add the
+		// counted barcodes, then itereate through each sample and add
+		// the count for each in order
 		if (merge) {
 			if (finished_barcodes.insert(barcodes).second) {
 				merge_file << converted_barcode;
@@ -476,6 +523,8 @@ string current_date() {
 	date.append(to_string(ltm->tm_year + 1900));
 	date.push_back('-');
 	string month = to_string(ltm->tm_mon + 1);
+	// If month is only a single number, zero pad so that it will be 06
+	// instead of 6
 	if (month.size() == 1) {
 		string zero_pad = "0";
 		zero_pad.append(month);
@@ -484,6 +533,8 @@ string current_date() {
 	date.append(month);
 	date.push_back('-');
 	string day = to_string(ltm->tm_mday);
+	// If day is only a single number, zero pad so that it will be 06
+	// instead of 6
 	if (day.size() == 1) {
 		string zero_pad = "0";
 		zero_pad.append(day);

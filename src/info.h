@@ -151,12 +151,26 @@ class Results {
 	// Used to insert into results_random
 	std::unordered_set<std::string> empty_set;
 
+	// set used for what finished barcodes have already been counted for the
+	// merge file
 	std::unordered_set<std::string> finished_barcodes;
-	std::vector<std::string> sample_barcodes;
+	// Vector of sample names used for ordering sample_barcodes
 	std::vector<std::string> sample_names;
+	// Ordered with sample_names to write in order
+	std::vector<std::string> sample_barcodes;
+	// Contains DNA barcode conversion information to convert to names while
+	// writing
 	BarcodeConversion barcode_conversion;
+	// A string used for when there are no samples barcodes included. Placed
+	// here to prevent repeated allocation
 	std::string no_sample_barcode = "barcode_counts";
 
+	/// A submethod used with to csv to write when there isn't a random
+	/// barcode included.  Between random barcode and not different
+	/// unordered_maps are used.  When random barcode is not included, the
+	/// last value holds a int count.  When a random barcode is included,
+	/// the last value holds a set of the random barcodes, which can be
+	/// counted to find the count
 	void write_counts(std::ofstream& sample_file, std::ofstream& merge_file,
 			  int index, std::vector<int>& indices, bool merge);
 	void write_random(std::ofstream& sample_file, std::ofstream& merge_file,
