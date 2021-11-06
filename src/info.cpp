@@ -355,7 +355,7 @@ void Results::to_csv(bool merge, BarcodeConversion _barcode_conversion,
 		string sample_name = sample_names[index];
 		string sample_file_path = file_start;
 		sample_file_path.append(sample_name);
-		sample_file_path.append(".csv");
+		sample_file_path.append("_counts.csv");
 		cout << "Writing " << sample_file_path << endl;
 
 		ofstream sample_file;
