@@ -56,6 +56,22 @@ int main(int argc, char** argv) {
 	    ->default_str("./")
 	    ->check(CLI::ExistingPath);
 
+	int barcodes_errors;
+	app.add_option("--barcodes_errors", barcodes_errors,
+		       "Maximimum number of sequence errors allowed within "
+		       "each counted barcode. Defaults to 20% of the total.");
+
+	int sample_errors;
+	app.add_option("--sample_errors", sample_errors,
+		       "Maximimum number of sequence errors allowed within "
+		       "each sample barcode. Defaults to 20% of the total.");
+
+	int constant_errors;
+	app.add_option(
+	    "--constant_errors", constant_errors,
+	    "Maximimum number of sequence errors allowed within the constant "
+	    "region of each read. Defaults to 20% of the total.");
+
 	CLI11_PARSE(app, argc, argv);
 
 	if (outpath.back() != '/') {
