@@ -32,7 +32,8 @@ Inspired by and some ideas adopted from <a href=https://github.com/sunghunbae/de
 ```
 git clone https://github.com/Roco-scientist/barcode-count.git
 cd barcode-count
-cmake .
+mkdir build && cd build
+cmake ..
 cmake --build .
 ```
 
@@ -148,13 +149,13 @@ at 1. For example, if there are a total of 3 barcodes, which may be the case wit
 representing one of the three barcodes. For CRISPR or barcode seq, where there may only be one barcode to count, this column would be all 1s.
 
 ## Run
-After compilation, the `barcode` binary can be moved anywhere.
+After compilation, the `barcode` binary can be moved anywhere.  It will be located in barcode-count/build/bin directory after compilation.
 <br>
 <br>
 Run barcode-count<br>
 
 ```
-bin/barcode-count --fastq <fastq_file> \
+build/bin/barcode-count --fastq <fastq_file> \
 	--sample_barcodes <sample_barcodes_file> \
 	--sequence_format <sequence_format_file> \
 	--counted_barcodes <counted_barcodes_file> \
