@@ -24,17 +24,17 @@ int main(int argc, char** argv) {
 	app.set_version_flag("-v,--version", "0.3.1");
 
 	std::string sample_barcodes_file;
-	app.add_option("-s,--sample_barcodes", sample_barcodes_file,
+	app.add_option("-s,--sample-barcodes", sample_barcodes_file,
 		       "Sample barcodes csv file")
 	    ->check(CLI::ExistingFile);
 
 	std::string counted_barcodes_file;
-	app.add_option("-c,--counted_barcodes", counted_barcodes_file,
-		       "Building block barcodes csv file")
+	app.add_option("-c,--counted-barcodes", counted_barcodes_file,
+		       "Counted barcodes file")
 	    ->check(CLI::ExistingFile);
 
 	std::string format_file;
-	app.add_option("-q,--sequence_format", format_file,
+	app.add_option("-q,--sequence-format", format_file,
 		       "Sequence format file")
 	    ->required()
 	    ->check(CLI::ExistingFile);
@@ -49,26 +49,26 @@ int main(int argc, char** argv) {
 	    ->default_val(thread::hardware_concurrency());
 
 	bool merge;
-	app.add_flag("-m,--merge_output", merge, "Merge output file");
+	app.add_flag("-m,--merge-output", merge, "Merge output file");
 
 	string outpath;
-	app.add_option("-o,--output_dir", outpath, "Output directory")
+	app.add_option("-o,--output-dir", outpath, "Output directory")
 	    ->default_str("./")
 	    ->check(CLI::ExistingPath);
 
 	int barcodes_errors;
-	app.add_option("--barcodes_errors", barcodes_errors,
+	app.add_option("--max-errors-counted-barcode", barcodes_errors,
 		       "Maximimum number of sequence errors allowed within "
 		       "each counted barcode. Defaults to 20% of the total.");
 
 	int sample_errors;
-	app.add_option("--sample_errors", sample_errors,
+	app.add_option("--max-errrors-sample", sample_errors,
 		       "Maximimum number of sequence errors allowed within "
 		       "each sample barcode. Defaults to 20% of the total.");
 
 	int constant_errors;
 	app.add_option(
-	    "--constant_errors", constant_errors,
+	    "--max-errors-constant", constant_errors,
 	    "Maximimum number of sequence errors allowed within the constant "
 	    "region of each read. Defaults to 20% of the total.");
 
