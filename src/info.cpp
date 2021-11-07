@@ -350,7 +350,7 @@ void Results::to_csv(bool merge, BarcodeConversion _barcode_conversion,
 	ofstream merge_file;
 	if (merge) {
 		string merge_path = file_start;
-		merge_path.append("_counts.all.csv");
+		merge_path.append("counts.all.csv");
 		merge_file.open(merge_path);
 		string merge_header = header;
 		for (auto const index : indices) {
