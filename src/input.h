@@ -10,6 +10,9 @@
 #include <thread>
 #include <vector>
 
+#include "./zlib/zlib.h"
+
+
 /**
  * The object which holds the sequencing reads which are passed between the
  * reader thread and the parsing threads.  Includes mutex locks to remain thread
@@ -73,7 +76,11 @@ class FastqReader {
        private:
 	std::string* fastq_path;
 	Sequences& sequences;
+	unsigned int line_num = 1;
+	unsigned int total_reads = 0;
+
 	void read();
+	void check_and_post(std::string& row);
 };
 
 #endif

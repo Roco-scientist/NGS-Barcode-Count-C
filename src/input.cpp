@@ -14,42 +14,71 @@ bool hasEnding(std::string const& fullString, std::string const& ending) {
 
 void FastqReader::read() {
 	if (hasEnding(*fastq_path, "fastq")) {
-		bool exit_thread = false;
 		ifstream fastq_file;
 		fastq_file.open(*fastq_path);
 		if (!fastq_file.is_open()) {
 			cout << *fastq_path << " not found" << endl;
 			exit(1);
 		}
-		unsigned int line_num = 1;
-		unsigned int total_reads = 0;
 		for (string row; getline(fastq_file, row);) {
-			if (line_num == 2) {
-				// cout << row << endl;
-				sequences.push(row);
-				++total_reads;
-				if (total_reads % 1000 == 0) {
-					printf("Total reads:           %d\r",
-					       total_reads);
-					fflush(stdout);
+			check_and_post(row);
+		}
+	} else if (hasEnding(*fastq_path, "fastq.gz")) {
+		gzFile fastq_file = (gzFile)gzopen(fastq_path->c_str(), "r");
+		std::vector<char> buffer(256);
+		unsigned pos = 0;
+		for (;;) {
+			if (gzgets(fastq_file, &buffer[pos],
+				   buffer.size() - pos) == 0) {
+				// end-of-file or error
+				int err;
+				const char* msg = gzerror(fastq_file, &err);
+				if (err != Z_OK) {
+					// handle error
 				}
-			}
-			++line_num;
-			if (line_num == 5) {
-				line_num = 1;
-			}
-			if (exit_thread) {
 				break;
 			}
+			unsigned read = strlen(&buffer[pos]);
+			if (buffer[pos + read - 1] == '\n') {
+				if (pos + read >= 2 &&
+				    buffer[pos + read - 2] == '\r') {
+					pos = pos + read - 2;
+				} else {
+					pos = pos + read - 1;
+				}
+				break;
+			}
+			if (read == 0 || pos + read < buffer.size() - 1) {
+				pos = read + pos;
+				break;
+			}
+			pos = buffer.size() - 1;
+			buffer.resize(buffer.size() * 2);
 		}
-		cout << "Total reads:            " << total_reads << '\r'
-		     << endl;
-		sequences.push("finished");
-	} else if (hasEnding(*fastq_path, "fastq.gz")) {
-		cout << "Gzipped files not yet supported.  Unzip then rerun";
-		exit(1);
+		buffer.resize(pos);
+		for (auto letter :  buffer) {
+			cout << letter;
+		}
+		cout << endl;
 	} else {
 		cout << "Fastq file needs to end with fastq or fastq.gz";
 		exit(1);
+	}
+	cout << "Total reads:            " << total_reads << '\r' << endl;
+	sequences.push("finished");
+}
+
+void FastqReader::check_and_post(string& row) {
+	if (line_num == 2) {
+		sequences.push(row);
+		++total_reads;
+		if (total_reads % 1000 == 0) {
+			printf("Total reads:           %d\r", total_reads);
+			fflush(stdout);
+		}
+	}
+	++line_num;
+	if (line_num == 5) {
+		line_num = 1;
 	}
 }
