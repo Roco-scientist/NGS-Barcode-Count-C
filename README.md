@@ -253,8 +253,10 @@ Writing
 
 Total time: 32 minutes 45.029 seconds
 ```
+
 <br>
 Gzipped fastq file
+
 ```
 Total reads:            513786068
 Counted:                306003221
