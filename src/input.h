@@ -3,6 +3,7 @@
 
 #include <chrono>
 #include <cstdio>
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <mutex>
@@ -10,7 +11,7 @@
 #include <thread>
 #include <vector>
 
-#include "./zlib/zlib.h"
+// #include "zlib/zlib.h"
 
 
 /**

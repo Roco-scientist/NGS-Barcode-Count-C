@@ -25,6 +25,7 @@ Inspired by and some ideas adopted from <a href=https://github.com/sunghunbae/de
 ## Requirements
 <ul>
 <li>cmake</li>
+<li>zlib installed</li>
 </ul>
 
 ## Build from source
