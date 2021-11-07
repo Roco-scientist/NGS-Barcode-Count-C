@@ -25,7 +25,7 @@ Inspired by and some ideas adopted from <a href=https://github.com/sunghunbae/de
 ## Requirements
 <ul>
 <li>cmake (version >= 3.10)</li>
-<li>zlib (version 1.2.11 verified to work)<br>`sudo apt-get install zlib1g-dev`</li>
+<li>zlib (version 1.2.11 verified to work)<br>sudo apt-get install zlib1g-dev</li>
 </ul>
 
 ## Build from source
@@ -237,15 +237,35 @@ If `--merge_output` is called, an additional file is created with the format (fo
 </table>
 
 ## Tests results
-On an 8 threaded i7-4790K CPU @ 4.00GHz with 16gb RAM, this algorithm was able to decode over 400 million sequencing reads in about a half hour.
-Results below:
+On an 8 threaded i7-4790K CPU @ 4.00GHz with 16gb RAM, this algorithm was able to decode over 400 million sequencing reads in about a half hour.<br>
+Results below: <br><br>
+Inflated fastq file
 ```
 Total reads:            418770347
 Counted:                257807865
 Constant region errors: 151955695
 Sample barcode errors:  3270100
 Counted barcode errors: 5736687
+
 Parsing time: 25 minutes 39.343 seconds
+
 Writing
+
 Total time: 32 minutes 45.029 seconds
+```
+<br>
+Gzipped fastq file
+```
+Total reads:            513786068
+Counted:                306003221
+Constant region errors: 201693122
+Sample barcode errors:  3427366
+Counted barcode errors: 2662359
+Duplicates:             0
+
+Parsing time: 32 minutes 5.224 seconds
+
+Writing
+
+Total time: 39 minutes 39.960 seconds
 ```
