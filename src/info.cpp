@@ -298,11 +298,11 @@ void Results::print() {
 };
 
 void Results::print_errors() {
-	cout << "Counted:                " << correct_counts << endl;
-	cout << "Constant region errors: " << constant_errors << endl;
-	cout << "Sample barcode errors:  " << sample_barcode_errors << endl;
-	cout << "Counted barcode errors: " << counted_barcode_errors << endl;
-	cout << "Duplicates:             " << duplicates << endl;
+	cout << "Correctly matched sequences: " << correct_counts << endl;
+	cout << "Constant region mismatches:  " << constant_errors << endl;
+	cout << "Sample barcode mismatches;   " << sample_barcode_errors << endl;
+	cout << "Counted barcode mismatches:  " << counted_barcode_errors << endl;
+	cout << "Duplicates:                  " << duplicates << endl;
 };
 
 void Results::to_csv(bool merge, BarcodeConversion _barcode_conversion,
