@@ -24,8 +24,8 @@ Inspired by and some ideas adopted from <a href=https://github.com/sunghunbae/de
 
 ## Requirements
 <ul>
-<li>cmake</li>
-<li>zlib installed</li>
+<li>cmake (version >= 3.10)</li>
+<li>zlib (version 1.2.11 verified to work)<br>`sudo apt-get install zlib1g-dev`</li>
 </ul>
 
 ## Build from source
