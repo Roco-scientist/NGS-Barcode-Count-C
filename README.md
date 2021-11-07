@@ -25,6 +25,7 @@ Inspired by and some ideas adopted from <a href=https://github.com/sunghunbae/de
 ## Requirements
 <ul>
 <li>cmake</li>
+<li>zlib installed</li>
 </ul>
 
 ## Build from source
@@ -46,8 +47,7 @@ Currently supports FASTQ, sequence format, sample barcode conversion, and buildi
 
 
 ### Fastq File
-Accepts unzipped fastq files.<br>
-Gzipped fastq files not yet supported.
+Accepts gzipped and unzipped fastq files.<br>
 
 ### Sequence Format File
 The sequence format file should be a text file that is line separated by the type of format.  The following is supported where the '#' should be replaced by the number of nucleotides corresponding to the barcode:<br>
