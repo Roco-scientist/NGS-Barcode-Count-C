@@ -120,7 +120,7 @@ int main(int argc, char** argv) {
 	cout << "\nParsing time: " << info::time_passed(start) << endl;
 	results.to_csv(merge, barcode_info, outpath,
 		       sequence_format.barcode_num,
-		       sequence_format.random_barcode_included, enrich);
+		       sequence_format.random_barcode_included);
 
 	cout << "\nTotal time: " << info::time_passed(start);
 	return 0;
