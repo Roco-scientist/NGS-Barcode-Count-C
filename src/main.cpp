@@ -47,6 +47,9 @@ int main(int argc, char** argv) {
 	bool merge;
 	app.add_flag("-m,--merge-output", merge, "Merge output file");
 
+	bool enrich;
+	app.add_flag("-e,--enrich", enrich, "Create output files of enrichment for single and double synthons/barcodes");
+
 	string outpath;
 	app.add_option("-o,--output-dir", outpath, "Output directory")
 	    ->default_str("./")
@@ -99,7 +102,7 @@ int main(int argc, char** argv) {
 	input::Sequences sequences;
 	thread reader([&]() { input::FastqReader(&fastq_path, sequences); });
 
-	info::Results results(&barcode_info.samples_seqs);
+	info::Results results(&barcode_info.samples_seqs, enrich);
 	vector<thread> parsers;
 	for (int i = 1; i < num_threads; ++i) {
 		parsers.push_back(thread([&]() {
@@ -117,7 +120,7 @@ int main(int argc, char** argv) {
 	cout << "\nParsing time: " << info::time_passed(start) << endl;
 	results.to_csv(merge, barcode_info, outpath,
 		       sequence_format.barcode_num,
-		       sequence_format.random_barcode_included);
+		       sequence_format.random_barcode_included, enrich);
 
 	cout << "\nTotal time: " << info::time_passed(start);
 	return 0;

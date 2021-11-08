@@ -107,8 +107,9 @@ class Results {
 	// Sample_barcode:counted_barcodes:random_barcodes
 	string_string_stringset_map results_random;
 
-	Results(std::unordered_set<std::string>* sample_seqs) {
+	Results(std::unordered_set<std::string>* sample_seqs, bool _enrich) {
 		new_results(sample_seqs);
+		enrich = _enrich;
 	};
 	Results();
 
@@ -163,6 +164,8 @@ class Results {
 	// Contains DNA barcode conversion information to convert to names while
 	// writing
 	BarcodeConversion barcode_conversion;
+
+	bool enrich;
 	// A string used for when there are no samples barcodes included. Placed
 	// here to prevent repeated allocation
 	std::string no_sample_barcode = "barcode_counts";
@@ -185,8 +188,8 @@ class MaxSeqErrors {
 	int sample_barcode = 0;
 	int counted_barcode = 0;
 
-	void update(int constant_errors, int sample_errors,
-		     int barcode_errors, SequenceFormat sequence_format);
+	void update(int constant_errors, int sample_errors, int barcode_errors,
+		    SequenceFormat sequence_format);
 
 	void print();
 
