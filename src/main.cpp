@@ -19,42 +19,58 @@ int main(int argc, char** argv) {
 
 	// Get command line arguments
 	CLI::App app{
-	    "Barcode-Count 0.3.1\nRory Coffey <coffeyrt@gmail.com>\nCounts "
+	    "Barcode-Count 0.4.0\nRory Coffey <coffeyrt@gmail.com>\nCounts "
 	    "barcodes located in sequencing data\n"};
-	app.set_version_flag("-v,--version", "0.3.1");
-
-	std::string sample_barcodes_file;
-	app.add_option("-s,--sample_barcodes", sample_barcodes_file,
-		       "Sample barcodes csv file")
-	    ->check(CLI::ExistingFile);
-
-	std::string counted_barcodes_file;
-	app.add_option("-c,--counted_barcodes", counted_barcodes_file,
-		       "Building block barcodes csv file")
-	    ->check(CLI::ExistingFile);
-
-	std::string format_file;
-	app.add_option("-q,--sequence_format", format_file,
-		       "Sequence format file")
-	    ->required()
-	    ->check(CLI::ExistingFile);
+	app.set_version_flag("-v,--version", "0.4.0");
 
 	std::string fastq_path;
 	app.add_option("-f,--fastq", fastq_path, "Fastq file path")
 	    ->required()
 	    ->check(CLI::ExistingFile);
 
+	std::string format_file;
+	app.add_option("-q,--sequence-format", format_file,
+		       "Sequence format file")
+	    ->required()
+	    ->check(CLI::ExistingFile);
+
+	std::string counted_barcodes_file;
+	app.add_option("-c,--counted-barcodes", counted_barcodes_file,
+		       "Counted barcodes file")
+	    ->check(CLI::ExistingFile);
+
+	std::string sample_barcodes_file;
+	app.add_option("-s,--sample-barcodes", sample_barcodes_file,
+		       "Sample barcodes csv file")
+	    ->check(CLI::ExistingFile);
+
+	bool merge;
+	app.add_flag("-m,--merge-output", merge, "Merge output file");
+
+	string outpath;
+	app.add_option("-o,--output-dir", outpath, "Output directory")
+	    ->default_str("./")
+	    ->check(CLI::ExistingPath);
+
 	int num_threads;
 	app.add_option("-t,--threads", num_threads, "Number of CPU threads")
 	    ->default_val(thread::hardware_concurrency());
 
-	bool merge;
-	app.add_flag("-m,--merge_output", merge, "Merge output file");
+	int barcodes_errors = -1;
+	app.add_option("--max-errors-counted-barcode", barcodes_errors,
+		       "Maximimum number of sequence errors allowed within "
+		       "each counted barcode. Defaults to 20% of the total.");
 
-	string outpath;
-	app.add_option("-o,--output_dir", outpath, "Output directory")
-	    ->default_str("./")
-	    ->check(CLI::ExistingPath);
+	int sample_errors = -1;
+	app.add_option("--max-errrors-sample", sample_errors,
+		       "Maximimum number of sequence errors allowed within "
+		       "each sample barcode. Defaults to 20% of the total.");
+
+	int constant_errors = -1;
+	app.add_option(
+	    "--max-errors-constant", constant_errors,
+	    "Maximimum number of sequence errors allowed within the constant "
+	    "region of each read. Defaults to 20% of the total.");
 
 	CLI11_PARSE(app, argc, argv);
 
@@ -72,6 +88,13 @@ int main(int argc, char** argv) {
 	info::SequenceFormat sequence_format;
 	sequence_format.build_regex(&format_file);
 	sequence_format.print();
+	cout << endl;
+
+	info::MaxSeqErrors max_seq_errors;
+	max_seq_errors.update(constant_errors, sample_errors, barcodes_errors,
+			      sequence_format);
+	max_seq_errors.print();
+	cout << endl;
 
 	input::Sequences sequences;
 	thread reader([&]() { input::FastqReader(&fastq_path, sequences); });
@@ -81,7 +104,8 @@ int main(int argc, char** argv) {
 	for (int i = 1; i < num_threads; ++i) {
 		parsers.push_back(thread([&]() {
 			parser::SequenceParser a(sequences, results,
-						 barcode_info, sequence_format);
+						 barcode_info, sequence_format,
+						 max_seq_errors);
 		}));
 	}
 	// wait for threads

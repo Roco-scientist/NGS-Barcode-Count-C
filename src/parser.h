@@ -21,10 +21,12 @@ class SequenceParser {
        public:
 	SequenceParser(input::Sequences& sequences, info::Results& results,
 		       info::BarcodeConversion _barcode_conversion,
-		       info::SequenceFormat _sequence_format)
+		       info::SequenceFormat _sequence_format,
+		       info::MaxSeqErrors _max_seq_errors)
 	    : sequences(sequences), results(results) {
 		barcode_conversion = _barcode_conversion;
 		sequence_format = _sequence_format;
+		max_seq_errors = _max_seq_errors;
 		// Start parsing after construction
 		run();
 	};
@@ -41,6 +43,8 @@ class SequenceParser {
 	// Format information which contains the regex used to capture DNA
 	// barcodes
 	info::SequenceFormat sequence_format;
+
+	info::MaxSeqErrors max_seq_errors;
 	// The current sequence which is being parsed.  Passed between methods
 	std::string sequence;
 

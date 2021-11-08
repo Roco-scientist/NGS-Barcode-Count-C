@@ -154,6 +154,7 @@ void SequenceFormat::build_regex(string *format_path) {
 	auto words_end = sregex_iterator();
 
 	barcode_num = 0;
+	int counted_barcode_size_sum = 0;
 	string regex_string;
 	// Find all matches in format string and create a new regex string with
 	// capture groups for each DNA barcode.  Also create a string which does
@@ -188,8 +189,15 @@ void SequenceFormat::build_regex(string *format_path) {
 			regex_string.append("([ATGCN]{");
 			regex_string.append(digits);
 			regex_string.append("})");
-			for (int i = 0; i < stoi(digits); ++i) {
+			int size = stoi(digits);
+			for (int i = 0; i < size; ++i) {
 				format_string.push_back('N');
+			}
+			if (barcodes.back() == "sample") {
+				sample_barcode_size = size;
+			}
+			if (barcodes.back() == "counted_barcode") {
+				counted_barcode_size_sum += size;
 			}
 		} else if (match_str.find('N') != string::npos) {
 			// If a barcode was not found, but a string of N's were
@@ -203,9 +211,10 @@ void SequenceFormat::build_regex(string *format_path) {
 			// the regex string for the constant regions
 			regex_string.append(match_str);
 			format_string.append(match_str);
-			constant_size += match_str.size();
+			constant_region_size += match_str.size();
 		}
 	}
+	avg_counted_barcode_size = counted_barcode_size_sum / barcode_num;
 	format_regex.assign(regex_string, regex::icase);
 	length = format_string.length();
 };
@@ -298,11 +307,13 @@ void Results::print() {
 };
 
 void Results::print_errors() {
-	cout << "Counted:                " << correct_counts << endl;
-	cout << "Constant region errors: " << constant_errors << endl;
-	cout << "Sample barcode errors:  " << sample_barcode_errors << endl;
-	cout << "Counted barcode errors: " << counted_barcode_errors << endl;
-	cout << "Duplicates:             " << duplicates << endl;
+	cout << "Correctly matched sequences: " << correct_counts << endl;
+	cout << "Constant region mismatches:  " << constant_errors << endl;
+	cout << "Sample barcode mismatches:   " << sample_barcode_errors
+	     << endl;
+	cout << "Counted barcode mismatches:  " << counted_barcode_errors
+	     << endl;
+	cout << "Duplicates:                  " << duplicates << endl;
 };
 
 void Results::to_csv(bool merge, BarcodeConversion _barcode_conversion,
@@ -514,6 +525,38 @@ void Results::write_random(ofstream &sample_file, ofstream &merge_file,
 			}
 		}
 	}
+};
+
+void MaxSeqErrors::update(int constant_errors, int sample_errors,
+			  int barcode_errors, SequenceFormat sequence_format) {
+	constant_region_size = sequence_format.constant_region_size;
+	sample_barcode_size = sequence_format.sample_barcode_size;
+	counted_barcode_size = sequence_format.avg_counted_barcode_size;
+	constant_region =
+	    constant_errors < 0 ? constant_region_size / 5 : constant_errors;
+	sample_barcode =
+	    sample_errors < 0 ? sample_barcode_size / 5 : sample_errors;
+	counted_barcode =
+	    barcode_errors < 0 ? counted_barcode_size / 5 : barcode_errors;
+};
+
+void MaxSeqErrors::print() {
+	cout << "-BARCODE INFO-" << endl;
+	cout << "Constant region size: " << constant_region_size << endl;
+	cout << "Maximum mismatches allowed per sequence: " << constant_region
+	     << endl;
+	cout << "--------------------------------------------------------------"
+	     << endl;
+	cout << "Sample barcode size: " << sample_barcode_size << endl;
+	cout << "Maximum mismatches allowed per sequence: " << sample_barcode
+	     << endl;
+	cout << "--------------------------------------------------------------"
+	     << endl;
+	cout << "Counted barcode size: " << counted_barcode_size << endl;
+	cout << "Maximum mismatches allowed per barcode sequence: "
+	     << counted_barcode << endl;
+	cout << "--------------------------------------------------------------"
+	     << endl;
 };
 
 string current_date() {

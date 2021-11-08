@@ -34,7 +34,7 @@ void FastqReader::read() {
 		cerr << "Fastq file needs to end with fastq or fastq.gz";
 		exit(1);
 	}
-	cout << "Total reads:            " << total_reads << '\r' << endl;
+	cout << "Total reads:                 " << total_reads << '\r' << endl;
 	sequences.push("finished");
 }
 
@@ -43,7 +43,7 @@ void FastqReader::check_and_post(string& line) {
 		sequences.push(line);
 		++total_reads;
 		if (total_reads % 1000 == 0) {
-			printf("Total reads:           %d\r", total_reads);
+			printf("Total reads:                %d\r", total_reads);
 			fflush(stdout);
 		}
 	}
