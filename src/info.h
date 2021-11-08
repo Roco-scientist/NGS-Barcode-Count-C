@@ -185,19 +185,8 @@ class MaxSeqErrors {
 	int sample_barcode = 0;
 	int counted_barcode = 0;
 
-	MaxSeqErrors(int constant_errors, int sample_errors,
-		     int barcode_errors, SequenceFormat sequence_format) {
-		constant_region_size = sequence_format.constant_region_size;
-		sample_barcode_size = sequence_format.sample_barcode_size;
-		counted_barcode_size = sequence_format.avg_counted_barcode_size;
-		constant_region =
-		    constant_errors < 0 ? constant_region_size / 5 : constant_errors;
-		sample_barcode =
-		    sample_errors < 0 ? sample_barcode_size / 5 : sample_errors;
-		counted_barcode = barcode_errors < 0 ? counted_barcode_size / 5
-						     : barcode_errors;
-	}
-	MaxSeqErrors();
+	void update(int constant_errors, int sample_errors,
+		     int barcode_errors, SequenceFormat sequence_format);
 
 	void print();
 

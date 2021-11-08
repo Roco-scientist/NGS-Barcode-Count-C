@@ -23,14 +23,9 @@ int main(int argc, char** argv) {
 	    "barcodes located in sequencing data\n"};
 	app.set_version_flag("-v,--version", "0.3.1");
 
-	std::string sample_barcodes_file;
-	app.add_option("-s,--sample-barcodes", sample_barcodes_file,
-		       "Sample barcodes csv file")
-	    ->check(CLI::ExistingFile);
-
-	std::string counted_barcodes_file;
-	app.add_option("-c,--counted-barcodes", counted_barcodes_file,
-		       "Counted barcodes file")
+	std::string fastq_path;
+	app.add_option("-f,--fastq", fastq_path, "Fastq file path")
+	    ->required()
 	    ->check(CLI::ExistingFile);
 
 	std::string format_file;
@@ -39,14 +34,15 @@ int main(int argc, char** argv) {
 	    ->required()
 	    ->check(CLI::ExistingFile);
 
-	std::string fastq_path;
-	app.add_option("-f,--fastq", fastq_path, "Fastq file path")
-	    ->required()
+	std::string counted_barcodes_file;
+	app.add_option("-c,--counted-barcodes", counted_barcodes_file,
+		       "Counted barcodes file")
 	    ->check(CLI::ExistingFile);
 
-	int num_threads;
-	app.add_option("-t,--threads", num_threads, "Number of CPU threads")
-	    ->default_val(thread::hardware_concurrency());
+	std::string sample_barcodes_file;
+	app.add_option("-s,--sample-barcodes", sample_barcodes_file,
+		       "Sample barcodes csv file")
+	    ->check(CLI::ExistingFile);
 
 	bool merge;
 	app.add_flag("-m,--merge-output", merge, "Merge output file");
@@ -55,6 +51,10 @@ int main(int argc, char** argv) {
 	app.add_option("-o,--output-dir", outpath, "Output directory")
 	    ->default_str("./")
 	    ->check(CLI::ExistingPath);
+
+	int num_threads;
+	app.add_option("-t,--threads", num_threads, "Number of CPU threads")
+	    ->default_val(thread::hardware_concurrency());
 
 	int barcodes_errors = -1;
 	app.add_option("--max-errors-counted-barcode", barcodes_errors,
@@ -90,9 +90,10 @@ int main(int argc, char** argv) {
 	sequence_format.print();
 	cout << endl;
 
-	info::MaxSeqErrors max_seq_errrors(constant_errors, sample_errors,
-					   barcodes_errors, sequence_format);
-	max_seq_errrors.print();
+	info::MaxSeqErrors max_seq_errors;
+	max_seq_errors.update(constant_errors, sample_errors, barcodes_errors,
+			      sequence_format);
+	max_seq_errors.print();
 	cout << endl;
 
 	input::Sequences sequences;
@@ -104,7 +105,7 @@ int main(int argc, char** argv) {
 		parsers.push_back(thread([&]() {
 			parser::SequenceParser a(sequences, results,
 						 barcode_info, sequence_format,
-						 max_seq_errrors);
+						 max_seq_errors);
 		}));
 	}
 	// wait for threads

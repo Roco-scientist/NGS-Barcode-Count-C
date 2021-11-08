@@ -213,8 +213,8 @@ void SequenceFormat::build_regex(string *format_path) {
 			format_string.append(match_str);
 			constant_region_size += match_str.size();
 		}
-		avg_counted_barcode_size = counted_barcode_size_sum / barcode_num;
 	}
+	avg_counted_barcode_size = counted_barcode_size_sum / barcode_num;
 	format_regex.assign(regex_string, regex::icase);
 	length = format_string.length();
 };
@@ -309,8 +309,10 @@ void Results::print() {
 void Results::print_errors() {
 	cout << "Correctly matched sequences: " << correct_counts << endl;
 	cout << "Constant region mismatches:  " << constant_errors << endl;
-	cout << "Sample barcode mismatches;   " << sample_barcode_errors << endl;
-	cout << "Counted barcode mismatches:  " << counted_barcode_errors << endl;
+	cout << "Sample barcode mismatches:   " << sample_barcode_errors
+	     << endl;
+	cout << "Counted barcode mismatches:  " << counted_barcode_errors
+	     << endl;
 	cout << "Duplicates:                  " << duplicates << endl;
 };
 
@@ -525,17 +527,36 @@ void Results::write_random(ofstream &sample_file, ofstream &merge_file,
 	}
 };
 
+void MaxSeqErrors::update(int constant_errors, int sample_errors,
+			  int barcode_errors, SequenceFormat sequence_format) {
+	constant_region_size = sequence_format.constant_region_size;
+	sample_barcode_size = sequence_format.sample_barcode_size;
+	counted_barcode_size = sequence_format.avg_counted_barcode_size;
+	constant_region =
+	    constant_errors < 0 ? constant_region_size / 5 : constant_errors;
+	sample_barcode =
+	    sample_errors < 0 ? sample_barcode_size / 5 : sample_errors;
+	counted_barcode =
+	    barcode_errors < 0 ? counted_barcode_size / 5 : barcode_errors;
+};
+
 void MaxSeqErrors::print() {
 	cout << "-BARCODE INFO-" << endl;
 	cout << "Constant region size: " << constant_region_size << endl;
-	cout << "Maximum mismatches allowed per sequence: " << constant_region << endl;
-	cout << "--------------------------------------------------------------" << endl;
+	cout << "Maximum mismatches allowed per sequence: " << constant_region
+	     << endl;
+	cout << "--------------------------------------------------------------"
+	     << endl;
 	cout << "Sample barcode size: " << sample_barcode_size << endl;
-	cout << "Maximum mismatches allowed per sequence: " << sample_barcode << endl;
-	cout << "--------------------------------------------------------------" << endl;
+	cout << "Maximum mismatches allowed per sequence: " << sample_barcode
+	     << endl;
+	cout << "--------------------------------------------------------------"
+	     << endl;
 	cout << "Counted barcode size: " << counted_barcode_size << endl;
-	cout << "Maximum mismatches allowed per barcode sequence: " << counted_barcode << endl;
-	cout << "--------------------------------------------------------------" << endl;
+	cout << "Maximum mismatches allowed per barcode sequence: "
+	     << counted_barcode << endl;
+	cout << "--------------------------------------------------------------"
+	     << endl;
 };
 
 string current_date() {
