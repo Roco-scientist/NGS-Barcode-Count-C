@@ -359,8 +359,8 @@ void Results::to_csv(bool merge, BarcodeConversion _barcode_conversion,
 	// Craete the ofstream merge_file object and if merge was called within
 	// the arguments, add a header to the merge file
 	ofstream merge_file;
+	string merge_path = file_start;
 	if (merge) {
-		string merge_path = file_start;
 		merge_path.append("counts.all.csv");
 		merge_file.open(merge_path);
 		string merge_header = header;
@@ -407,12 +407,20 @@ void Results::to_csv(bool merge, BarcodeConversion _barcode_conversion,
 		sample_file.close();
 	}
 	merge_file.close();
+	if (merge) {
+		cout << "Finished " << merge_path << endl;
+	}
 };
 
 void Results::write_counts(ofstream &sample_file, ofstream &merge_file,
 			   int index, vector<int> &indices, bool merge) {
+	int barcodes_count = 0;
 	// For the sample, iterate through the counted_barcodes->counts
 	for (auto const &[barcodes, count] : results[sample_barcodes[index]]) {
+		if (barcodes_count % 50000 == 0) {
+			cout << "Barcodes counted: " << barcodes_count << '\r';
+		}
+		++barcodes_count;
 		string converted_barcode;
 		// If there isn't a counted_barcode conversion file, do not
 		// convert
@@ -464,13 +472,19 @@ void Results::write_counts(ofstream &sample_file, ofstream &merge_file,
 			}
 		}
 	}
+	cout << "Barcodes counted: " << barcodes_count << endl;
 };
 
 void Results::write_random(ofstream &sample_file, ofstream &merge_file,
 			   int index, vector<int> &indices, bool merge) {
+	int barcodes_count = 0;
 	// For the sample, iterate through the counted_barcodes->counts
 	for (auto const &[barcodes, random_barcodes] :
 	     results_random[sample_barcodes[index]]) {
+		if (barcodes_count % 50000 == 0) {
+			cout << "Barcodes counted: " << barcodes_count << '\r';
+		}
+		++barcodes_count;
 		auto count = random_barcodes.size();
 		string converted_barcode;
 		// If there isn't a counted_barcode conversion file, do not
@@ -525,6 +539,7 @@ void Results::write_random(ofstream &sample_file, ofstream &merge_file,
 			}
 		}
 	}
+	cout << "Barcodes counted: " << barcodes_count << endl;
 };
 
 void MaxSeqErrors::update(int constant_errors, int sample_errors,
