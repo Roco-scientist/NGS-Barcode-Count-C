@@ -56,17 +56,17 @@ int main(int argc, char** argv) {
 	    ->default_str("./")
 	    ->check(CLI::ExistingPath);
 
-	int barcodes_errors;
+	int barcodes_errors = -1;
 	app.add_option("--max-errors-counted-barcode", barcodes_errors,
 		       "Maximimum number of sequence errors allowed within "
 		       "each counted barcode. Defaults to 20% of the total.");
 
-	int sample_errors;
+	int sample_errors = -1;
 	app.add_option("--max-errrors-sample", sample_errors,
 		       "Maximimum number of sequence errors allowed within "
 		       "each sample barcode. Defaults to 20% of the total.");
 
-	int constant_errors;
+	int constant_errors = -1;
 	app.add_option(
 	    "--max-errors-constant", constant_errors,
 	    "Maximimum number of sequence errors allowed within the constant "
@@ -88,6 +88,12 @@ int main(int argc, char** argv) {
 	info::SequenceFormat sequence_format;
 	sequence_format.build_regex(&format_file);
 	sequence_format.print();
+	cout << endl;
+
+	info::MaxSeqErrors max_seq_errrors(constant_errors, sample_errors,
+					   barcodes_errors, sequence_format);
+	max_seq_errrors.print();
+	cout << endl;
 
 	input::Sequences sequences;
 	thread reader([&]() { input::FastqReader(&fastq_path, sequences); });
@@ -97,7 +103,8 @@ int main(int argc, char** argv) {
 	for (int i = 1; i < num_threads; ++i) {
 		parsers.push_back(thread([&]() {
 			parser::SequenceParser a(sequences, results,
-						 barcode_info, sequence_format);
+						 barcode_info, sequence_format,
+						 max_seq_errrors);
 		}));
 	}
 	// wait for threads

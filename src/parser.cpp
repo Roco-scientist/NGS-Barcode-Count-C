@@ -68,7 +68,7 @@ bool SequenceParser::fix_constant() {
 	// all possible sequences in the sequencing read
 	string best_match =
 	    fix_sequence(sequence_format.format_string, subject_sequences,
-			 sequence_format.constant_size / 5);
+			 max_seq_errors.constant_region);
 	// If a match is found, proceed and replace the N's in the format string
 	// with the barcodes from the sequencing read
 	if (best_match != "None") {
@@ -122,7 +122,7 @@ void SequenceParser::add_count(smatch& barcode_match) {
 				    counted_barcode,
 				    barcode_conversion.counted_barcodes_seqs
 					[counted_barcode_index],
-				    counted_barcode.size() / 5);
+				    max_seq_errors.counted_barcode);
 				// If after trying to fix there was not a good
 				// match, count the error
 				if (counted_barcode == "None") {
@@ -147,7 +147,7 @@ void SequenceParser::add_count(smatch& barcode_match) {
 	    barcode_conversion.samples_seqs.count(sample_barcode) == 0) {
 		sample_barcode = fix_sequence(sample_barcode,
 					      barcode_conversion.samples_seqs,
-					      sample_barcode.size() / 5);
+					      max_seq_errors.sample_barcode);
 	}
 	// If the sample barcode could be fixed or is good, and all other
 	// barcodes are good (checked previously), add the count, otherwise

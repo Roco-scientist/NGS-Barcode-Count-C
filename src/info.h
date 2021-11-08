@@ -81,7 +81,9 @@ struct SequenceFormat {
 	// The length of the format string
 	size_t length;
 	// The length of the format string withouth N's used for % error
-	size_t constant_size = 0;
+	size_t constant_region_size = 0;
+	size_t sample_barcode_size = 0;
+	size_t avg_counted_barcode_size = 0;
 
 	/// Builds a regex with captures for DNA barcodes from the format file
 	void build_regex(std::string* format_path);
@@ -175,6 +177,34 @@ class Results {
 			  int index, std::vector<int>& indices, bool merge);
 	void write_random(std::ofstream& sample_file, std::ofstream& merge_file,
 			  int index, std::vector<int>& indices, bool merge);
+};
+
+class MaxSeqErrors {
+       public:
+	int constant_region = 0;
+	int sample_barcode = 0;
+	int counted_barcode = 0;
+
+	MaxSeqErrors(int constant_errors, int sample_errors,
+		     int barcode_errors, SequenceFormat sequence_format) {
+		constant_region_size = sequence_format.constant_region_size;
+		sample_barcode_size = sequence_format.sample_barcode_size;
+		counted_barcode_size = sequence_format.avg_counted_barcode_size;
+		constant_region =
+		    constant_errors < 0 ? constant_region_size / 5 : constant_errors;
+		sample_barcode =
+		    sample_errors < 0 ? sample_barcode_size / 5 : sample_errors;
+		counted_barcode = barcode_errors < 0 ? counted_barcode_size / 5
+						     : barcode_errors;
+	}
+	MaxSeqErrors();
+
+	void print();
+
+       private:
+	int constant_region_size = 0;
+	int sample_barcode_size = 0;
+	int counted_barcode_size = 0;
 };
 
 /// Creates the current data in the format of YYYY-MM-DD
