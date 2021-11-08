@@ -156,30 +156,30 @@ Run barcode-count<br>
 
 ```
 build/bin/barcode-count --fastq <fastq_file> \
-	--sample_barcodes <sample_barcodes_file> \
-	--sequence_format <sequence_format_file> \
-	--counted_barcodes <counted_barcodes_file> \
-	--output_dir <output_dir> \
+	--sample-barcodes <sample_barcodes_file> \
+	--sequence-format <sequence_format_file> \
+	--counted-barcodes <counted_barcodes_file> \
+	--output-dir <output_dir> \
 	--threads <num_of_threads> \
-	--merge_output \
+	--merge-output \
 ```
 
 <br>
 <ul>
 <li>
---counted_barcodes is optional.  If it is not used, the output counts uses the DNA barcode to count with no error handling on these barcodes.
+--counted-barcodes is optional.  If it is not used, the output counts uses the DNA barcode to count with no error handling on these barcodes.
 </li>
 <li>
---sample_barcodes is optional.  
+--sample-barcodes is optional.  
 </li>
 <li>
---output_dir defaults to the current directory if not used.
+--output-dir defaults to the current directory if not used.
 </li>
 <li>
 --threads defaults to the number of cores on the machine.
 </li>
 <li>
---merge_output flag that merges the output csv file so that each sample has one column
+--merge-output flag that merges the output csv file so that each sample has one column
 </li>
 </ul>
 
