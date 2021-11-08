@@ -20,11 +20,14 @@ typedef std::unordered_map<std::string, string_stringset_map>
 typedef std::unordered_map<std::string, unsigned int> string_int_map;
 typedef std::unordered_set<std::string> stringset;
 
+/// Separates a comma separated string into comma separated vector of strings
+std::vector<std::string> comma_separate(std::string comma_string);
+
 /**
  * Funtion to pull the first <num_colums> data from each pass comma separated
  * string
  */
-std::vector<std::string> take_columns(int num_columns, std::string row);
+std::vector<std::string> take_columns(size_t num_columns, std::string row);
 
 struct BarcodeConversion {
 	// Holds the conversion of DNA barcode to sample name
@@ -92,6 +95,9 @@ struct SequenceFormat {
 };
 
 typedef std::unordered_map<std::string, string_int_map> string_string_int_map;
+
+/// Whether or not the dataset is single, double, or full synthon enrichment
+enum EnrichedType { Single, Double, Full };
 
 /**
  * Object which is passed between threads and holds the results which are added
@@ -165,15 +171,23 @@ class Results {
 	// writing
 	BarcodeConversion barcode_conversion;
 
-	bool enrich;
-	string_string_int_map single_enrichment;
-	string_string_int_map double_enrichment;
-	void add_enriched(std::string sample_seq,
-			  std::string converted_barcodes, int count);
+	// Enrichment variables used when the --enrich flag is called.
+	// Calculates the single and double synthon/barcode counts
+	bool enrich;  // whether or not calc and output enricment
+	string_string_int_map single_enrichment;  // single data holder
+	string_string_int_map double_enrichment;  // double data holder
+	// Adds the enrichment data when given the sample DNA barcode and the
+	// converted counted barcodes
+	void add_enriched(std::string& sample_seq,
+			  std::string& converted_barcodes, int count);
 
 	// A string used for when there are no samples barcodes included. Placed
 	// here to prevent repeated allocation
 	std::string no_sample_barcode = "barcode_counts";
+
+	// File header strings used for each of the csv files
+	std::string sample_file_header;
+	std::string merge_file_header;
 
 	/// A submethod used with to csv to write when there isn't a random
 	/// barcode included.  Between random barcode and not different
@@ -182,23 +196,38 @@ class Results {
 	/// the last value holds a set of the random barcodes, which can be
 	/// counted to find the count
 	void write_counts(std::ofstream& sample_file, std::ofstream& merge_file,
-			  int index, std::vector<int>& indices, bool merge);
+			  int index, std::vector<int>& indices, bool merge,
+			  EnrichedType enriched_type);
 	void write_random(std::ofstream& sample_file, std::ofstream& merge_file,
 			  int index, std::vector<int>& indices, bool merge);
+	/// If the enrich argument flag is called, the single and
+	/// disynthon/barcode enrichment are written to csv
+	void write_enriched(bool merge, std::string outpath, int barcode_num);
 };
 
+/**
+ * Class which holds how many sequencing errors are allowed within each regions.
+ * If the max-error arguments are not used, these numbers default to 20% of the
+ * length of the barcode/region. This is passed to all parsing threads.
+ */
 class MaxSeqErrors {
        public:
-	int constant_region = 0;
-	int sample_barcode = 0;
-	int counted_barcode = 0;
+	// Maximum sequencing areas allowed per sequencing read within the given
+	// areas
+	int constant_region = 0;  // Any region that doesn't have a barcode
+	int sample_barcode = 0;	  // Given sample barcode
+	int counted_barcode = 0;  // Each counted barcode, which can be multiple
 
+	// Creates a new MaxSeqErrors object with the argument inputs and with
+	// the SequenceFormat object, which contains each region length
 	void update(int constant_errors, int sample_errors, int barcode_errors,
 		    SequenceFormat sequence_format);
 
+	// Displays region size and errors allowed to cout.
 	void print();
 
        private:
+	// Holders of each region size to print out after object creation
 	int constant_region_size = 0;
 	int sample_barcode_size = 0;
 	int counted_barcode_size = 0;
@@ -209,8 +238,5 @@ std::string current_date();
 
 // Returns a string of the hours, minutes, and seconds passed since start
 std::string time_passed(std::chrono::steady_clock::time_point start);
-
-// Separates a comma separated string into comma separated vector of strings
-std::vector<std::string> comma_separate(std::string comma_string);
 
 #endif

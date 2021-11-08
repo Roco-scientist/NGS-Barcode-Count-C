@@ -2,31 +2,30 @@
 
 using namespace std;
 
-vector<string> take_columns(int num_columns, string row) {
-	size_t pos;		     // keep track of the column position
-	string data;		     // column,row data holder
-	vector<string> data_points;  // vector to contain all data points
-	int current_column = 1;	     // start at column 1
-	// iterate through each comma point and pull out the data.  Stop when
-	// there are no more commas or the num_columns is reached
-	while ((pos = row.find(',')) != string::npos &&
-	       current_column <= num_columns) {
-		data = row.substr(0, pos);
-		data_points.push_back(data);
-		// remove the data from the string up to the comma
-		row.erase(0, pos + 1);
-		current_column++;
+vector<string> comma_separate(string comma_string) {
+	vector<string> comma_separated_values;
+	int pos = 0;
+	while ((pos = comma_string.find(',')) != string::npos) {
+		comma_separated_values.push_back(comma_string.substr(0, pos));
+		comma_string.erase(0, pos + 1);
 	}
+	comma_separated_values.push_back(comma_string);
+	return comma_separated_values;
+}
+
+vector<string> take_columns(size_t num_columns, string row) {
+	vector<string> data_points =
+	    comma_separate(row);  // vector to contain all data points
 	// If the the last column was the num_columns then push the last string
 	// data of the row
-	if (current_column == num_columns) {
-		data_points.push_back(row);
-	} else if (current_column < num_columns) {  // If there are not enough
-						    // columns, exit with error
-		cout << "Not enough columns" << endl;
+	if (data_points.size() < num_columns) {	 // If there are not enough
+						 // columns, exit with error
+		cerr << "Not enough columns" << endl;
 		exit(1);
 	}
-	return data_points;
+	vector<string> sub(data_points.begin(),
+			   data_points.begin() + num_columns);
+	return sub;
 }
 
 void BarcodeConversion::sample_barcode_conversion(string *barcode_path) {
@@ -36,7 +35,7 @@ void BarcodeConversion::sample_barcode_conversion(string *barcode_path) {
 	ifstream barcode_file;
 	barcode_file.open(*barcode_path);
 	if (!barcode_file.is_open()) {
-		cout << *barcode_path << " not found" << endl;
+		cerr << *barcode_path << " not found" << endl;
 		exit(1);
 	}
 
@@ -59,7 +58,7 @@ void BarcodeConversion::barcode_file_conversion(string *barcode_path) {
 	ifstream barcode_file;
 	barcode_file.open(*barcode_path);
 	if (!barcode_file.is_open()) {
-		cout << *barcode_path << " not found" << endl;
+		cerr << *barcode_path << " not found" << endl;
 		exit(1);
 	}
 
@@ -318,15 +317,15 @@ void Results::print_errors() {
 	cout << "Duplicates:                  " << duplicates << endl;
 };
 
-void Results::add_enriched(string sample_seq, string converted_barcodes,
+void Results::add_enriched(string &sample_seq, string &converted_barcodes,
 			   int count) {
 	vector<string> converted_barcodes_vec =
 	    comma_separate(converted_barcodes);
-	size_t barcode_num = converted_barcodes.size();
+	size_t barcode_num = converted_barcodes_vec.size();
 	// For each single barcode, create a new string which is a comma
 	// separated string with the converted barcode being the only value. The
 	// rest are left empty with commas.  This is used as the key to keep the
-	// count and is convention to write a CSV file later
+	// count and is convenient for writing a CSV file later
 	for (size_t i = 0; i < barcode_num; ++i) {
 		string *single_barcode = &converted_barcodes_vec[i];
 		string single_barcode_string;
@@ -342,22 +341,58 @@ void Results::add_enriched(string sample_seq, string converted_barcodes,
 		    pair<string, int>(single_barcode_string, 0));
 		single_enrichment[sample_seq][single_barcode_string] += count;
 	}
+
+	// For each double barcode/synthon, create a new string which is a comma
+	// separated string with the converted barcodes being the only value.
+	// The rest are left empty with commas.  This is used as the key to keep
+	// the count and is convenient for writing a CSV file later
 	if (barcode_num > 2) {
-		for (size_t first_barcode_index = 0; first_barcode_index < (barcode_num -1); ++first_barcode_index){
-			for (size_t next_barcode_add = 1; next_barcode_add < (barcode_num - first_barcode_index); ++next_barcode_add) {
+		// Iterate through the first barcode first
+		for (size_t first_barcode_index = 0;
+		     first_barcode_index < (barcode_num - 1);
+		     ++first_barcode_index) {
+			// Iterate through the second barcode, which is an add
+			// to the first index
+			for (size_t next_barcode_add = 1;
+			     next_barcode_add <
+			     (barcode_num - first_barcode_index);
+			     ++next_barcode_add) {
 				string double_barcode_string;
-				for (size_t column_index = 0; column_index < barcode_num; ++column_index) {
-					if (column_index == first_barcode_index){
-						double_barcode_string.append(converted_barcodes_vec[first_barcode_index]);
-					} else if (column_index == (first_barcode_index + next_barcode_add)) {
-						double_barcode_string.append(converted_barcodes_vec[(first_barcode_index + next_barcode_add)]);
+				// Iterate through the columns and if it is one
+				// of the two barcodes, add the barcode string,
+				// else leave it empty
+				for (size_t column_index = 0;
+				     column_index < barcode_num;
+				     ++column_index) {
+					if (column_index ==
+					    first_barcode_index) {
+						double_barcode_string.append(
+						    converted_barcodes_vec
+							[first_barcode_index]);
+					} else if (column_index ==
+						   (first_barcode_index +
+						    next_barcode_add)) {
+						double_barcode_string.append(
+						    converted_barcodes_vec[(
+							first_barcode_index +
+							next_barcode_add)]);
 					}
+					// If it is not the last value, add a
+					// comma
 					if (column_index != (barcode_num - 1)) {
-						double_barcode_string.push_back(',');
+						double_barcode_string.push_back(
+						    ',');
 					}
 				}
-				double_enrichment[sample_seq].emplace(pair<string, int>(double_barcode_string, 0));
-				double_enrichment[sample_seq][double_barcode_string] += count;
+				// If the double barcode does not already exist
+				// in the map, add it with a count of 0
+				double_enrichment[sample_seq].emplace(
+				    pair<string, int>(double_barcode_string,
+						      0));
+				// Add the count
+				double_enrichment[sample_seq]
+						 [double_barcode_string] +=
+				    count;
 			}
 		}
 	}
@@ -410,18 +445,18 @@ void Results::to_csv(bool merge, BarcodeConversion _barcode_conversion,
 	if (merge) {
 		merge_path.append("counts.all.csv");
 		merge_file.open(merge_path);
-		string merge_header = header;
+		merge_file_header = header;
 		for (auto const index : indices) {
-			merge_header.push_back(',');
-			merge_header.append(sample_names[index]);
+			merge_file_header.push_back(',');
+			merge_file_header.append(sample_names[index]);
 		}
-		merge_file << merge_header << endl;
+		merge_file << merge_file_header << endl;
 	}
 
 	// Create the header for all of the sample count files.  These will be
 	// Barcode_1..Barcode_N, Count
-	string sample_header = header;
-	sample_header.append(",Count");
+	sample_file_header = header;
+	sample_file_header.append(",Count");
 
 	// Write the sample files in the order of sample names.  This is doen in
 	// order because of the merge file columns need to always be in the same
@@ -437,7 +472,7 @@ void Results::to_csv(bool merge, BarcodeConversion _barcode_conversion,
 		// Create the sample file, open, and add the header
 		ofstream sample_file;
 		sample_file.open(sample_file_path);
-		sample_file << sample_header << endl;
+		sample_file << sample_file_header << endl;
 
 		// Writing is different depending on if a random barcode is
 		// included.  This is because without the random barcode, the
@@ -449,7 +484,7 @@ void Results::to_csv(bool merge, BarcodeConversion _barcode_conversion,
 				     merge);
 		} else {
 			write_counts(sample_file, merge_file, index, indices,
-				     merge);
+				     merge, EnrichedType::Full);
 		}
 		sample_file.close();
 	}
@@ -457,13 +492,30 @@ void Results::to_csv(bool merge, BarcodeConversion _barcode_conversion,
 	if (merge) {
 		cout << "Finished " << merge_path << endl;
 	}
+	if (enrich) {
+		write_enriched(merge, outpath, barcode_num);
+	}
 };
 
 void Results::write_counts(ofstream &sample_file, ofstream &merge_file,
-			   int index, vector<int> &indices, bool merge) {
+			   int index, vector<int> &indices, bool merge,
+			   EnrichedType enriched_type) {
+	string_string_int_map results_map;
+	switch (enriched_type) {
+		case Single:
+			results_map = single_enrichment;
+			break;
+		case Double:
+			results_map = double_enrichment;
+			break;
+		case Full:
+			results_map = results;
+			break;
+	};
 	int barcodes_count = 0;
 	// For the sample, iterate through the counted_barcodes->counts
-	for (auto const &[barcodes, count] : results[sample_barcodes[index]]) {
+	for (auto const &[barcodes, count] :
+	     results_map[sample_barcodes[index]]) {
 		if (barcodes_count % 50000 == 0) {
 			cout << "Barcodes counted: " << barcodes_count << '\r';
 		}
@@ -471,7 +523,9 @@ void Results::write_counts(ofstream &sample_file, ofstream &merge_file,
 		string converted_barcode;
 		// If there isn't a counted_barcode conversion file, do not
 		// convert
-		if (barcode_conversion.counted_barcodes_hash.empty()) {
+		if (barcode_conversion.counted_barcodes_hash.empty() ||
+		    enriched_type == EnrichedType::Single ||
+		    enriched_type == EnrichedType::Double) {
 			converted_barcode = barcodes;
 		} else {
 			// Else convert by comma splitting the counted_barcodes
@@ -508,18 +562,20 @@ void Results::write_counts(ofstream &sample_file, ofstream &merge_file,
 			if (finished_barcodes.insert(barcodes).second) {
 				merge_file << converted_barcode;
 				for (auto const index : indices) {
-					results[sample_barcodes[index]].emplace(
-					    barcodes, 0);
+					results_map[sample_barcodes[index]]
+					    .emplace(barcodes, 0);
 					merge_file
 					    << ','
-					    << results[sample_barcodes[index]]
-						      [barcodes];
+					    << results_map
+						   [sample_barcodes[index]]
+						   [barcodes];
 				}
 				merge_file << endl;
 			}
 		}
-		if (enrich) {
-			add_enriched(sample_barcodes[index], converted_barcode, results[sample_barcodes[index]][barcodes]);
+		if (enrich && enriched_type == EnrichedType::Full) {
+			add_enriched(sample_barcodes[index], converted_barcode,
+				     results[sample_barcodes[index]][barcodes]);
 		}
 	}
 	cout << "Barcodes counted: " << barcodes_count << endl;
@@ -589,17 +645,123 @@ void Results::write_random(ofstream &sample_file, ofstream &merge_file,
 			}
 		}
 		if (enrich) {
-			add_enriched(sample_barcodes[index], converted_barcode, results[sample_barcodes[index]][barcodes].size());
+			add_enriched(
+			    sample_barcodes[index], converted_barcode,
+			    results_random[sample_barcodes[index]][barcodes]
+				.size());
 		}
 	}
 	cout << "Barcodes counted: " << barcodes_count << endl;
 };
+
+void Results::write_enriched(bool merge, string outpath, int barcode_num) {
+	string file_start = outpath;
+	file_start.append(info::current_date());
+	file_start.push_back('_');
+
+	// Create indexes for the sample_barcodes in the alphabetical order of
+	// the sample names
+	vector<int> indices(sample_names.size());
+	iota(indices.begin(), indices.end(), 0);
+	sort(indices.begin(), indices.end(), [&](int A, int B) -> bool {
+		return sample_names[A] < sample_names[B];
+	});
+
+	// Craete the ofstream merge_file object and if merge was called within
+	// the arguments, add a header to the merge file
+	ofstream merge_file_single;
+	ofstream merge_file_double;
+	string merge_path_single = file_start;
+	string merge_path_double = file_start;
+	if (merge) {
+		if (barcode_num > 1) {
+			merge_path_single.append("counts.all.Single.csv");
+			merge_file_single.open(merge_path_single);
+			merge_file_single << merge_file_header << endl;
+		}
+		if (barcode_num > 2) {
+			merge_path_double.append("counts.all.Double.csv");
+			merge_file_double.open(merge_path_double);
+			merge_file_double << merge_file_header << endl;
+		}
+	}
+
+	// Write the sample files in the order of sample names.  This is done in
+	// order because of the merge file columns need to always be in the same
+	// order
+	for (auto const index : indices) {
+		// Create the sample file path for single and double synthon
+		// enrichment
+		string sample_name = sample_names[index];
+		string sample_file_path = file_start;
+		sample_file_path.append(sample_name);
+		sample_file_path.append("_counts.");
+		string sample_file_path_single = sample_file_path;
+		string sample_file_path_double = sample_file_path;
+		ofstream sample_file_single;
+		ofstream sample_file_double;
+		// If there are more than 1 counted barcodes, write the single
+		// barcode enrichment
+		if (barcode_num > 1) {
+			sample_file_path_single.append("Single.csv");
+			cout << "Writing " << sample_file_path_single << endl;
+
+			// Create the sample file, open, and add the header
+			sample_file_single.open(sample_file_path_single);
+			sample_file_single << sample_file_header << endl;
+
+			// Writing is different depending on if a random barcode
+			// is included.  This is because without the random
+			// barcode, the last value in the map is the count. With
+			// the random barcode, the last value holds a set of
+			// random barcodes.  This set is counted to find the
+			// count
+			write_counts(sample_file_single, merge_file_single,
+				     index, indices, merge,
+				     EnrichedType::Single);
+		}
+		// If there are more than 2 counted barcodes, write the double
+		// barcode enrichment
+		if (barcode_num > 2) {
+			sample_file_path_double.append("Double.csv");
+			cout << "Writing " << sample_file_path_double << endl;
+
+			// Create the sample file, open, and add the header
+			sample_file_double.open(sample_file_path_double);
+			sample_file_double << sample_file_header << endl;
+
+			// Writing is different depending on if a random barcode
+			// is included.  This is because without the random
+			// barcode, the last value in the map is the count. With
+			// the random barcode, the last value holds a set of
+			// random barcodes.  This set is counted to find the
+			// count
+			write_counts(sample_file_double, merge_file_double,
+				     index, indices, merge,
+				     EnrichedType::Double);
+		}
+		sample_file_single.close();
+		sample_file_double.close();
+	}
+	merge_file_single.close();
+	merge_file_double.close();
+	if (merge) {
+		if (barcode_num > 1) {
+			cout << "Finished " << merge_path_single << endl;
+		}
+		if (barcode_num > 2) {
+			cout << "Finished " << merge_path_double << endl;
+		}
+	}
+}
 
 void MaxSeqErrors::update(int constant_errors, int sample_errors,
 			  int barcode_errors, SequenceFormat sequence_format) {
 	constant_region_size = sequence_format.constant_region_size;
 	sample_barcode_size = sequence_format.sample_barcode_size;
 	counted_barcode_size = sequence_format.avg_counted_barcode_size;
+	// If max-errors arguments were not used, store 20% of each size, other
+	// use the argument values
 	constant_region =
 	    constant_errors < 0 ? constant_region_size / 5 : constant_errors;
 	sample_barcode =
@@ -662,7 +824,7 @@ string time_passed(chrono::steady_clock::time_point start) {
 	    chrono::duration_cast<chrono::milliseconds>(finish - start)
 		.count() %
 	    1000);
-	// 0 padd milliseconds so it can be used as a fraction seconds
+	// 0 pad milliseconds so it can be used as a fraction seconds
 	while (milliseconds.size() < 3) {
 		string millisecondes_temp = "0";
 		millisecondes_temp.append(milliseconds);
@@ -687,15 +849,4 @@ string time_passed(chrono::steady_clock::time_point start) {
 	time_passed.append(milliseconds);
 	time_passed.append(" seconds\n");
 	return time_passed;
-}
-
-vector<string> comma_separate(string comma_string) {
-	vector<string> comma_separated_values;
-	int pos = 0;
-	while ((pos = comma_string.find(',')) != string::npos) {
-		comma_separated_values.push_back(comma_string.substr(0, pos));
-		comma_string.erase(0, pos + 1);
-	}
-	comma_separated_values.push_back(comma_string);
-	return comma_separated_values;
 }
