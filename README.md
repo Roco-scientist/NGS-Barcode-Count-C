@@ -12,7 +12,7 @@ Multithreaded and low resource use.  Uses one thread to read and the rest to pro
 This program does not store all data within RAM but instead sequentially processes the sequencing data in order to remain memory efficient.  
 <br>
 <br>
-Error handling is defaulted at 20% maximum sequence error per constant region and barcode.  The algorithm fixes any sequenced constant region or barcode with the best match possible.  If there are two or more best matches,
+Error handling is defaulted at 20% maximum sequence error per constant region and barcode.  This can be changed through CLI arguments.  The algorithm fixes any sequenced constant region or barcode with the best match possible.  If there are two or more best matches,
 it is not counted.
 <br>
 <br>
