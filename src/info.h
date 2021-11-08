@@ -166,6 +166,11 @@ class Results {
 	BarcodeConversion barcode_conversion;
 
 	bool enrich;
+	string_string_int_map single_enrichment;
+	string_string_int_map double_enrichment;
+	void add_enriched(std::string sample_seq,
+			  std::string converted_barcodes, int count);
+
 	// A string used for when there are no samples barcodes included. Placed
 	// here to prevent repeated allocation
 	std::string no_sample_barcode = "barcode_counts";
@@ -204,5 +209,8 @@ std::string current_date();
 
 // Returns a string of the hours, minutes, and seconds passed since start
 std::string time_passed(std::chrono::steady_clock::time_point start);
+
+// Separates a comma separated string into comma separated vector of strings
+std::vector<std::string> comma_separate(std::string comma_string);
 
 #endif
