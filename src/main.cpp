@@ -19,9 +19,9 @@ int main(int argc, char** argv) {
 
 	// Get command line arguments
 	CLI::App app{
-	    "Barcode-Count 0.4.0\nRory Coffey <coffeyrt@gmail.com>\nCounts "
+	    "Barcode-Count 0.5.0\nRory Coffey <coffeyrt@gmail.com>\nCounts "
 	    "barcodes located in sequencing data\n"};
-	app.set_version_flag("-v,--version", "0.4.0");
+	app.set_version_flag("-v,--version", "0.5.0");
 
 	std::string fastq_path;
 	app.add_option("-f,--fastq", fastq_path, "Fastq file path")
@@ -46,6 +46,9 @@ int main(int argc, char** argv) {
 
 	bool merge;
 	app.add_flag("-m,--merge-output", merge, "Merge output file");
+
+	bool enrich;
+	app.add_flag("-e,--enrich", enrich, "Create output files of enrichment for single and double synthons/barcodes");
 
 	string outpath;
 	app.add_option("-o,--output-dir", outpath, "Output directory")
@@ -99,7 +102,7 @@ int main(int argc, char** argv) {
 	input::Sequences sequences;
 	thread reader([&]() { input::FastqReader(&fastq_path, sequences); });
 
-	info::Results results(&barcode_info.samples_seqs);
+	info::Results results(&barcode_info.samples_seqs, enrich);
 	vector<thread> parsers;
 	for (int i = 1; i < num_threads; ++i) {
 		parsers.push_back(thread([&]() {

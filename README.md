@@ -1,7 +1,4 @@
 # barcode-count
-C++ refactoring of <a href="https://github.com/Roco-scientist/NGS-Barcode-Count-dummy">NGS-Barcode-Count</a>.  Currently not as versatile as NGS-Barcode-Count, which is written in Rust.
-<br>
-<br>
 Fast and memory efficient DNA barcode counter and decoder for next generation sequencing data.  Includes error handling.  Works for DEL (DNA encoded libraries), high throughput CRISPR sequencing, barcode sequencing.  If the barcode file is included, the program will convert to barcode names and correct for errors. If a random barcode is included to collapse PCR duplicates, these duplicates will not be counted.  Parsing over 400 million sequencing reads took under a half hour with 8 threads and around 2GB of RAM use.<br>
 <br>
 <br>
@@ -17,6 +14,13 @@ it is not counted.
 <br>
 <br>
 If there is a random barcode included, sequences with a duplicated random barcode are not counted.
+<br>
+<br>
+C++ refactoring of <a href="https://github.com/Roco-scientist/NGS-Barcode-Count-dummy">NGS-Barcode-Count</a>, which is written in Rust. Features not yet refactored:<br>
+<ul>
+<li>Stat file output</li>
+<li>Sequencing read quality filter</li>
+</ul>
 <br>
 <br>
 Inspired by and some ideas adopted from <a href=https://github.com/sunghunbae/decode target="_blank" rel="noopener noreferrer">decode</a>
@@ -162,6 +166,7 @@ build/bin/barcode-count --fastq <fastq_file> \
 	--output-dir <output_dir> \
 	--threads <num_of_threads> \
 	--merge-output \
+	--enrich
 ```
 
 <br>
@@ -180,6 +185,9 @@ build/bin/barcode-count --fastq <fastq_file> \
 </li>
 <li>
 --merge-output flag that merges the output csv file so that each sample has one column
+</li>
+<li>
+--enrich argument flag that will find the counts for each barcode if there are 2 or more counted barcodes included, and output the file. Also will do the same with double barcodes if there are 3+. Useful for DEL
 </li>
 </ul>
 
@@ -235,6 +243,21 @@ If `--merge_output` is called, an additional file is created with the format (fo
 <td>#</td>
 </tr>
 </table>
+
+If the `--enrich` arguments is called, single and double barcode count files are ouptut.
+
+## Uses
+
+### DEL
+Setup as shown with all example files used throughout this README.  Typically you will use 3 x '[]' for counting barcodes, which represents 3 building blocks, within the format file.
+
+### CRISPR-seq
+Same setup as with DEL, but typically with only one '[]' counted barcode in the format file.  As such, within the counted barcode conversion file, the third column will contain all '1's
+
+### Barcode-seq
+If the intention is to count the random barcodes and have the counts associated with these random barcodes, which is the case with bar-seq of cell pools for lineage evolution etc., 
+then the random barcode, within this situation, is the counted barcode and represented with '[]' in the format file.  A counted barcode conversion file will not be included.  Without the counted barcode conversion file, 
+the program will output the counted random barcode sequence and the associated count.  Afterwards, clustering or any other analysis can be applied.
 
 ## Tests results
 On an 8 threaded i7-4790K CPU @ 4.00GHz with 16gb RAM, this algorithm was able to decode over 400 million sequencing reads in about a half hour.<br>
