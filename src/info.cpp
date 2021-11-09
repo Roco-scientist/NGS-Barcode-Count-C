@@ -450,7 +450,8 @@ void Results::to_csv(bool merge, BarcodeConversion _barcode_conversion,
 			merge_file_header.push_back(',');
 			merge_file_header.append(sample_names[index]);
 		}
-		merge_file << merge_file_header << endl;
+		merge_text.append(merge_file_header);
+		merge_text.push_back('\n');
 	}
 
 	// Create the header for all of the sample count files.  These will be
@@ -472,7 +473,8 @@ void Results::to_csv(bool merge, BarcodeConversion _barcode_conversion,
 		// Create the sample file, open, and add the header
 		ofstream sample_file;
 		sample_file.open(sample_file_path);
-		sample_file << sample_file_header << endl;
+		sample_text.append(sample_file_header);
+		sample_text.push_back('\n');
 
 		// Writing is different depending on if a random barcode is
 		// included.  This is because without the random barcode, the
@@ -480,14 +482,16 @@ void Results::to_csv(bool merge, BarcodeConversion _barcode_conversion,
 		// the last value holds a set of random barcodes.  This set is
 		// counted to find the count
 		if (random_barcode_included) {
-			write_random(sample_file, merge_file, index, indices,
-				     merge);
+			write_random(index, indices, merge);
 		} else {
-			write_counts(sample_file, merge_file, index, indices,
-				     merge, EnrichedType::Full);
+			write_counts(index, indices, merge, EnrichedType::Full);
 		}
+		sample_file << sample_text;
+		sample_text.clear();
 		sample_file.close();
 	}
+	merge_file << merge_text;
+	merge_text.clear();
 	merge_file.close();
 	if (merge) {
 		cout << "Finished " << merge_path << endl;
@@ -497,8 +501,7 @@ void Results::to_csv(bool merge, BarcodeConversion _barcode_conversion,
 	}
 };
 
-void Results::write_counts(ofstream &sample_file, ofstream &merge_file,
-			   int index, vector<int> &indices, bool merge,
+void Results::write_counts(int index, vector<int> &indices, bool merge,
 			   EnrichedType enriched_type) {
 	string_string_int_map results_map;
 	switch (enriched_type) {
@@ -553,24 +556,26 @@ void Results::write_counts(ofstream &sample_file, ofstream &merge_file,
 		}
 
 		// Add the comma separated barcodes and the count to the file
-		sample_file << converted_barcode << ',' << count << endl;
+		sample_text.append(converted_barcode);
+		sample_text.push_back(',');
+		sample_text.append(to_string(count));
+		sample_text.push_back('\n');
 		// If merege is called, check to see if the barcodes have
 		// already been added to the merge file.  If not, add the
 		// counted barcodes, then itereate through each sample and add
 		// the count for each in order
 		if (merge) {
 			if (finished_barcodes.insert(barcodes).second) {
-				merge_file << converted_barcode;
+				merge_text.append(converted_barcode);
 				for (auto const index : indices) {
 					results_map[sample_barcodes[index]]
 					    .emplace(barcodes, 0);
-					merge_file
-					    << ','
-					    << results_map
-						   [sample_barcodes[index]]
-						   [barcodes];
+					merge_text.push_back(',');
+					merge_text.append(to_string(
+					    results_map[sample_barcodes[index]]
+						       [barcodes]));
 				}
-				merge_file << endl;
+				merge_text.push_back('\n');
 			}
 		}
 		if (enrich && enriched_type == EnrichedType::Full) {
@@ -581,8 +586,7 @@ void Results::write_counts(ofstream &sample_file, ofstream &merge_file,
 	cout << "Barcodes counted: " << barcodes_count << endl;
 };
 
-void Results::write_random(ofstream &sample_file, ofstream &merge_file,
-			   int index, vector<int> &indices, bool merge) {
+void Results::write_random(int index, vector<int> &indices, bool merge) {
 	int barcodes_count = 0;
 	// For the sample, iterate through the counted_barcodes->counts
 	for (auto const &[barcodes, random_barcodes] :
@@ -623,25 +627,27 @@ void Results::write_random(ofstream &sample_file, ofstream &merge_file,
 		}
 
 		// Add the comma separated barcodes and the count to the file
-		sample_file << converted_barcode << ',' << count << endl;
+		sample_text.append(converted_barcode);
+		sample_text.push_back(',');
+		sample_text.append(to_string(count));
+		sample_text.push_back('\n');
 		// If merege is called, check to see if the barcodes have
 		// already been added to the merge file.  If not, add the
 		// counted barcodes, then itereate through each sample and add
 		// the count for each in order
 		if (merge) {
 			if (finished_barcodes.insert(barcodes).second) {
-				merge_file << converted_barcode;
+				merge_text.append(converted_barcode);
 				for (auto const index : indices) {
 					results_random[sample_barcodes[index]]
 					    .emplace(barcodes, empty_set);
-					merge_file
-					    << ','
-					    << results_random
-						   [sample_barcodes[index]]
-						   [barcodes]
-						       .size();
+					merge_text.push_back(',');
+					merge_text.append(to_string(
+					    results_random[sample_barcodes[index]]
+						       [barcodes]
+							   .size()));
 				}
-				merge_file << endl;
+				merge_text.push_back('\n');
 			}
 		}
 		if (enrich) {
@@ -689,20 +695,20 @@ void Results::write_enriched(bool merge, string outpath, int barcode_num) {
 	// Write the sample files in the order of sample names.  This is done in
 	// order because of the merge file columns need to always be in the same
 	// order
-	for (auto const index : indices) {
-		// Create the sample file path for single and double synthon
-		// enrichment
-		string sample_name = sample_names[index];
-		string sample_file_path = file_start;
-		sample_file_path.append(sample_name);
-		sample_file_path.append("_counts.");
-		string sample_file_path_single = sample_file_path;
-		string sample_file_path_double = sample_file_path;
-		ofstream sample_file_single;
-		ofstream sample_file_double;
-		// If there are more than 1 counted barcodes, write the single
-		// barcode enrichment
-		if (barcode_num > 1) {
+	// If there are more than 1 counted barcodes, write the single
+	// barcode enrichment
+	if (barcode_num > 1) {
+		for (auto const index : indices) {
+			// Create the sample file path for single and double
+			// synthon enrichment
+			string sample_name = sample_names[index];
+			string sample_file_path = file_start;
+			sample_file_path.append(sample_name);
+			sample_file_path.append("_counts.");
+			string sample_file_path_single = sample_file_path;
+			string sample_file_path_double = sample_file_path;
+			ofstream sample_file_single;
+			ofstream sample_file_double;
 			sample_file_path_single.append("Single.csv");
 			cout << "Writing " << sample_file_path_single << endl;
 
@@ -716,13 +722,31 @@ void Results::write_enriched(bool merge, string outpath, int barcode_num) {
 			// the random barcode, the last value holds a set of
 			// random barcodes.  This set is counted to find the
 			// count
-			write_counts(sample_file_single, merge_file_single,
-				     index, indices, merge,
+			write_counts(index, indices, merge,
 				     EnrichedType::Single);
+			sample_file_single << sample_text;
+			sample_text.clear();
+			sample_file_single.close();
 		}
-		// If there are more than 2 counted barcodes, write the double
-		// barcode enrichment
-		if (barcode_num > 2) {
+		if (merge) {
+			merge_file_single << merge_text;
+			merge_text.clear();
+			merge_file_single.close();
+			cout << "Finished " << merge_path_single << endl;
+		}
+	}
+	// If there are more than 2 counted barcodes, write the double
+	// barcode enrichment
+	if (barcode_num > 2) {
+		for (auto const index : indices) {
+			// Create the sample file path for single and double
+			// synthon enrichment
+			string sample_name = sample_names[index];
+			string sample_file_path = file_start;
+			sample_file_path.append(sample_name);
+			sample_file_path.append("_counts.");
+			string sample_file_path_double = sample_file_path;
+			ofstream sample_file_double;
 			sample_file_path_double.append("Double.csv");
 			cout << "Writing " << sample_file_path_double << endl;
 
@@ -736,20 +760,17 @@ void Results::write_enriched(bool merge, string outpath, int barcode_num) {
 			// the random barcode, the last value holds a set of
 			// random barcodes.  This set is counted to find the
 			// count
-			write_counts(sample_file_double, merge_file_double,
-				     index, indices, merge,
+			write_counts(index, indices, merge,
 				     EnrichedType::Double);
+			sample_file_double << sample_text;
+			sample_text.clear();
+			sample_file_double.close();
 		}
-		sample_file_single.close();
-		sample_file_double.close();
-	}
-	merge_file_single.close();
-	merge_file_double.close();
-	if (merge) {
-		if (barcode_num > 1) {
-			cout << "Finished " << merge_path_single << endl;
-		}
-		if (barcode_num > 2) {
+		if (merge) {
+			merge_file_double << merge_text;
+			merge_text.clear();
+			merge_file_double.close();
+
 			cout << "Finished " << merge_path_double << endl;
 		}
 	}
