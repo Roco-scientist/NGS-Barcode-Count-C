@@ -4,7 +4,7 @@ using namespace std;
 
 vector<string> comma_separate(string comma_string) {
 	vector<string> comma_separated_values;
-	int pos = 0;
+	size_t pos;
 	while ((pos = comma_string.find(',')) != string::npos) {
 		comma_separated_values.push_back(comma_string.substr(0, pos));
 		comma_string.erase(0, pos + 1);
