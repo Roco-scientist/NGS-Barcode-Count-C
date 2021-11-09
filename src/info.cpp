@@ -557,7 +557,7 @@ void Results::write_counts(int index, vector<int> &indices, bool merge,
 
 		// Add the comma separated barcodes and the count to the file
 		sample_text.append(converted_barcode);
-		sample_text.push_back('.');
+		sample_text.push_back(',');
 		sample_text.append(to_string(count));
 		sample_text.push_back('\n');
 		// If merege is called, check to see if the barcodes have
@@ -628,7 +628,7 @@ void Results::write_random(int index, vector<int> &indices, bool merge) {
 
 		// Add the comma separated barcodes and the count to the file
 		sample_text.append(converted_barcode);
-		sample_text.push_back('.');
+		sample_text.push_back(',');
 		sample_text.append(to_string(count));
 		sample_text.push_back('\n');
 		// If merege is called, check to see if the barcodes have
