@@ -188,6 +188,9 @@ class Results {
 	// File header strings used for each of the csv files
 	std::string sample_file_header;
 	std::string merge_file_header;
+	// Output text
+	std::string sample_text;
+	std::string merge_text;
 
 	/// A submethod used with to csv to write when there isn't a random
 	/// barcode included.  Between random barcode and not different
@@ -195,11 +198,9 @@ class Results {
 	/// last value holds a int count.  When a random barcode is included,
 	/// the last value holds a set of the random barcodes, which can be
 	/// counted to find the count
-	void write_counts(std::ofstream& sample_file, std::ofstream& merge_file,
-			  int index, std::vector<int>& indices, bool merge,
+	void write_counts(int index, std::vector<int>& indices, bool merge,
 			  EnrichedType enriched_type);
-	void write_random(std::ofstream& sample_file, std::ofstream& merge_file,
-			  int index, std::vector<int>& indices, bool merge);
+	void write_random(int index, std::vector<int>& indices, bool merge);
 	/// If the enrich argument flag is called, the single and
 	/// disynthon/barcode enrichment are written to csv
 	void write_enriched(bool merge, std::string outpath, int barcode_num);
