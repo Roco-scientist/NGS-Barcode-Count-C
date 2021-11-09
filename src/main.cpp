@@ -19,9 +19,9 @@ int main(int argc, char** argv) {
 
 	// Get command line arguments
 	CLI::App app{
-	    "Barcode-Count 0.5.0\nRory Coffey <coffeyrt@gmail.com>\nCounts "
+	    "Barcode-Count 0.5.1\nRory Coffey <coffeyrt@gmail.com>\nCounts "
 	    "barcodes located in sequencing data\n"};
-	app.set_version_flag("-v,--version", "0.5.0");
+	app.set_version_flag("-v,--version", "0.5.1");
 
 	std::string fastq_path;
 	app.add_option("-f,--fastq", fastq_path, "Fastq file path")
