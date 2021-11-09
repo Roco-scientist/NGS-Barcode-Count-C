@@ -264,17 +264,18 @@ On an 8 threaded i7-4790K CPU @ 4.00GHz with 16gb RAM, this algorithm was able t
 Results below: <br><br>
 Inflated fastq file
 ```
-Total reads:            418770347
-Counted:                257807865
-Constant region errors: 151955695
-Sample barcode errors:  3270100
-Counted barcode errors: 5736687
+Total reads:                 418770347
+Correctly matched sequences: 257807865
+Constant region mismatches:  151955695
+Sample barcode mismatches:   3270100
+Counted barcode mismatches:  5736687
+Duplicates:                  0
 
-Parsing time: 25 minutes 39.343 seconds
+Parsing time: 25 minutes 26.770 seconds
 
-Writing
+Writing 
 
-Total time: 32 minutes 45.029 seconds
+Total time: 26 minutes 47.223 seconds
 ```
 
 <br>
@@ -292,5 +293,5 @@ Parsing time: 32 minutes 5.224 seconds
 
 Writing
 
-Total time: 39 minutes 39.960 seconds
+Total time: 33 minutes 39.960 seconds
 ```
