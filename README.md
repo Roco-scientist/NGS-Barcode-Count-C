@@ -33,12 +33,22 @@ Inspired by and some ideas adopted from <a href=https://github.com/sunghunbae/de
 </ul>
 
 ## Build from source
+
+The following places a `barcode-count` executable within the `barcode-count/build/bin/` directory.  This executable can be moved anywhere.
+One recommendation is to move it to a path directory (`echo $PATH`), such as `/usr/local/bin/` so that it can be executed from anywhere.
+<br><br>
+Clone the repo:
+
 ```
 git clone https://github.com/Roco-scientist/barcode-count.git
 cd barcode-count
-mkdir build && cd build
-cmake ..
-cmake --build .
+```
+
+Build the `barcode-count` executable within `./build/bin/`:
+
+```
+cmake -B ./build
+cmake --build ./build
 ```
 
 ## Files Needed
