@@ -292,16 +292,16 @@ Total time: 26 minutes 47.223 seconds
 Gzipped fastq file
 
 ```
-Total reads:            513786068
-Counted:                306003221
-Constant region errors: 201693122
-Sample barcode errors:  3427366
-Counted barcode errors: 2662359
-Duplicates:             0
+Total reads:                 418770347
+Correctly matched sequences: 257807865
+Constant region mismatches:  151955695
+Sample barcode mismatches:   3270100
+Counted barcode mismatches:  5736687
+Duplicates:                  0
 
-Parsing time: 32 minutes 5.224 seconds
+Parsing time: 25 minutes 57.438 seconds
 
-Writing
+Writing 
 
-Total time: 33 minutes 39.960 seconds
+Total time: 27 minutes 17.314 seconds
 ```
