@@ -26,7 +26,8 @@ Inspired by and some ideas adopted from [decode](https://github.com/sunghunbae/d
   
 ## Requirements
 - cmake (version >= 3.10)
-- zlib (version 1.2.11 verified to work): sudo apt-get install zlib1g-dev
+- zlib (version 1.2.11 verified to work)
+  - sudo apt-get install zlib1g-dev
 
 ## Build from source
 
