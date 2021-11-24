@@ -18,7 +18,7 @@ it is not counted.
 The algorithm is defaulted to not filter unless the --min_quality argument is called.  See fastq documentation to understand read quality scores.
 The scores used are after ascii conversion and 33 subtraction.~~  
   
-C++ refactoring of [NGS-Barcode-Count](https://github.com/Roco-scientist/NGS-Barcode-Count-dummy), which is written in Rust. Features not yet refactored:  
+C++ refactoring of [NGS-Barcode-Count](https://github.com/Roco-scientist/NGS-Barcode-Count), which is written in Rust. Features not yet refactored:  
 - Stat file output
 - Sequencing read quality filter  
   
